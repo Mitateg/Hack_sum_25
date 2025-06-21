@@ -113,7 +113,7 @@ class PromoBot:
             [InlineKeyboardButton(self.get_text('main_menu_btn', context), callback_data='main_menu')]
         ]
         return InlineKeyboardMarkup(keyboard)
-    
+
     def get_post_generation_keyboard(self, context):
         """Create keyboard for after text generation with channel posting option."""
         channel_info = context.user_data.get('channel_info', {})
@@ -759,20 +759,27 @@ class PromoBot:
         
         try:
             # Create product description for AI
-            product_desc = f"{product.get('name', '')} - {product.get('brand', '')} - {product.get('features', '')}"
+            product_info = f"{product.get('name', '')} - {product.get('brand', '')} - {product.get('features', '')}"
             
-            # Generate promo using OpenAI
-            response = openai.Completion.create(
-                engine="text-davinci-003",
-                prompt=self.get_text('openai_prompt', context, product_desc, product_desc),
-                max_tokens=200,
+            # Generate promo using OpenAI with proper translation system
+            system_prompt = self.get_text('system_prompt', context)
+            prompt = self.get_text('openai_prompt', context, product_info, product_info)
+
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=300,
                 temperature=0.7
             )
             
-            promo_text = response.choices[0].text.strip()
+            promo_text = response.choices[0].message.content.strip()
             
             # Store generated text
             context.user_data['last_generated_promo'] = promo_text
+            context.user_data['last_generated_text'] = promo_text
             context.user_data['last_product_name'] = product.get('name', 'Product')
             
             # Update statistics
@@ -783,7 +790,7 @@ class PromoBot:
             
             await query.edit_message_text(
                 result_text,
-                reply_markup=self.get_promo_generation_keyboard(context)
+                reply_markup=self.get_post_generation_keyboard(context)
             )
             
         except Exception as e:

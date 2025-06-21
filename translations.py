@@ -120,8 +120,8 @@ TRANSLATIONS = {
         'post_cancelled_message': 'The post has been cancelled.',
         
         # OpenAI prompts
-        'openai_prompt': 'Create an engaging promotional text for: {}. Make it persuasive and marketing-focused.',
-        'system_prompt': 'You are a professional marketing copywriter. Create compelling promotional content.',
+        'openai_prompt': 'Create a compelling promotional post for the following product: {}\n\nThe promotional text should:\n- Be engaging and attention-grabbing\n- Highlight key benefits and features\n- Include a strong call-to-action\n- Be suitable for social media posting\n- Use emojis appropriately\n- Be between 50-150 words\n- Sound persuasive and professional\n- BE WRITTEN IN ENGLISH\n\nProduct: {}',
+        'system_prompt': 'You are a professional marketing copywriter specializing in creating compelling promotional content for products. Your writing style is engaging, persuasive, and modern. Write in English.',
         
         # Help content
         'help_content': '❓ How to use this bot:\n\n1. 📦 Add Products - Send product links to save them\n2. ✨ Generate Promos - Create promotional texts\n3. 🌐 Multiple Languages - Available in English, Russian, Romanian\n4. 📢 Channel Integration - Post directly to your channels\n\nNeed more help? Contact support!',
@@ -275,8 +275,8 @@ TRANSLATIONS = {
         'post_cancelled_message': 'Публикация была отменена.',
         
         # OpenAI prompts
-        'openai_prompt': 'Создай привлекательный рекламный текст для: {}. Сделай его убедительным и маркетинговым.',
-        'system_prompt': 'Ты профессиональный маркетинговый копирайтер. Создавай убедительный рекламный контент.',
+        'openai_prompt': 'Создай убедительный рекламный пост для следующего товара: {}\n\nРекламный текст должен:\n- Быть привлекательным и захватывающим внимание\n- Подчеркивать ключевые преимущества и особенности\n- Включать сильный призыв к действию\n- Подходить для публикации в социальных сетях\n- Уместно использовать эмодзи\n- Быть длиной 50-150 слов\n- Звучать убедительно и профессионально\n- БЫТЬ НАПИСАННЫМ НА РУССКОМ ЯЗЫКЕ\n\nТовар: {}',
+        'system_prompt': 'Ты профессиональный маркетинговый копирайтер, специализирующийся на создании убедительного рекламного контента для товаров. Твой стиль письма привлекательный, убедительный и современный. Пиши на русском языке.',
         
         # Help content
         'help_content': '❓ Как использовать этого бота:\n\n1. 📦 Добавить товары - Отправляйте ссылки на товары для сохранения\n2. ✨ Создать промо - Создавайте рекламные тексты\n3. 🌐 Несколько языков - Доступен на английском, русском, румынском\n4. 📢 Интеграция каналов - Публикуйте прямо в ваши каналы\n\nНужна помощь? Обратитесь в поддержку!',
@@ -397,7 +397,7 @@ TRANSLATIONS = {
         'remove_channel': '❌ Elimină Canal',
         'auto_post_on': '✅ PORNIT',
         'auto_post_off': '❌ OPRIT',
-        'auto_post_toggle': '🤖 Postare automată: {}',
+        'auto_post_toggle': '🤖 Postare Automată: {}',
         'post_history': '📊 Istoric Postări',
         'add_channel_group': '➕ Adaugă Canal/Grup',
         'add_channel_title': '📢 Adaugă Canal/Grup',
@@ -430,8 +430,8 @@ TRANSLATIONS = {
         'post_cancelled_message': 'Postarea a fost anulată.',
         
         # OpenAI prompts
-        'openai_prompt': 'Creează un text promoțional atractiv pentru: {}. Fă-l persuasiv și orientat spre marketing.',
-        'system_prompt': 'Ești un copywriter marketing profesionist. Creează conținut promoțional convingător.',
+        'openai_prompt': 'Creează un post promoțional convingător pentru următorul produs: {}\n\nTextul promoțional trebuie să:\n- Fie captivant și să atragă atenția\n- Să evidențieze beneficiile și caracteristicile cheie\n- Să includă un apel puternic la acțiune\n- Să fie potrivit pentru postarea pe rețelele sociale\n- Să folosească emoji-uri în mod corespunzător\n- Să aibă între 50-150 de cuvinte\n- Să sune convingător și profesional\n- SĂ FIE SCRIS ÎN LIMBA ROMÂNĂ\n\nProdus: {}',
+        'system_prompt': 'Ești un copywriter de marketing profesionist specializat în crearea de conținut promoțional convingător pentru produse. Stilul tău de scriere este captivant, convingător și modern. Scrie în română.',
         
         # Help content
         'help_content': '❓ Cum să folosești acest bot:\n\n1. 📦 Adaugă Produse - Trimite linkuri de produse pentru a le salva\n2. ✨ Generează Promoții - Creează texte promoționale\n3. 🌐 Limbi Multiple - Disponibil în engleză, rusă, română\n4. 📢 Integrare Canal - Postează direct în canalele tale\n\nAi nevoie de ajutor? Contactează suportul!',
