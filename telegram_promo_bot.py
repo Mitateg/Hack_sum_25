@@ -1,5 +1,11 @@
 import os
 import logging
+import re
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse, urljoin
+from PIL import Image
+import io
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 import openai
@@ -169,24 +175,11 @@ class PromoBot:
         """Create the main menu inline keyboard in grid format."""
         keyboard = [
             [InlineKeyboardButton(self.get_text('generate_promo', context), callback_data='generate_promo'),
-             InlineKeyboardButton(self.get_text('categories', context), callback_data='categories')],
+             InlineKeyboardButton("📦 My Products", callback_data='my_products')],
             [InlineKeyboardButton(self.get_text('examples', context), callback_data='examples'),
              InlineKeyboardButton(self.get_text('help', context), callback_data='help')],
             [InlineKeyboardButton("📢 Channel Settings", callback_data='channel_settings'),
              InlineKeyboardButton(self.get_text('language', context), callback_data='language_select')]
-        ]
-        return InlineKeyboardMarkup(keyboard)
-
-    def get_categories_keyboard(self, context):
-        """Create the product categories inline keyboard in grid format."""
-        keyboard = [
-            [InlineKeyboardButton(self.get_text('electronics', context), callback_data='cat_electronics'),
-             InlineKeyboardButton(self.get_text('fashion', context), callback_data='cat_fashion')],
-            [InlineKeyboardButton(self.get_text('home', context), callback_data='cat_home'),
-             InlineKeyboardButton(self.get_text('beauty', context), callback_data='cat_beauty')],
-            [InlineKeyboardButton(self.get_text('gaming', context), callback_data='cat_gaming'),
-             InlineKeyboardButton(self.get_text('books', context), callback_data='cat_books')],
-            [InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]
         ]
         return InlineKeyboardMarkup(keyboard)
 
@@ -334,6 +327,278 @@ class PromoBot:
             
             return False, f"Failed to post: {str(e)}"
 
+    def is_valid_url(self, url):
+        """Check if URL is valid."""
+        try:
+            result = urlparse(url)
+            return all([result.scheme, result.netloc])
+        except:
+            return False
+
+    async def scrape_product_info(self, url):
+        """Scrape product information from URL."""
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Extract basic info using common selectors
+            raw_data = {
+                'url': url,
+                'title': self.extract_title(soup),
+                'price': self.extract_price(soup),
+                'description': self.extract_description(soup),
+                'image_url': self.extract_image(soup, url),
+                'brand': self.extract_brand(soup),
+                'raw_text': soup.get_text()[:2000]  # Limit text for AI analysis
+            }
+            
+            return raw_data
+            
+        except requests.exceptions.Timeout:
+            return None, "Connection timeout - website took too long to respond"
+        except requests.exceptions.ConnectionError:
+            return None, "Connection failed - unable to reach website"
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 403:
+                return None, "Access denied - website blocked automated access"
+            elif e.response.status_code == 404:
+                return None, "Page not found - invalid product link"
+            else:
+                return None, f"HTTP error {e.response.status_code}"
+        except Exception as e:
+            return None, f"Scraping failed: {str(e)}"
+
+    def extract_title(self, soup):
+        """Extract product title from page."""
+        # Try multiple common selectors
+        selectors = [
+            'h1[data-automation-id="product-title"]',  # Generic
+            'h1.product-title',
+            'h1#product-title', 
+            '.product-name h1',
+            '.product-title',
+            'h1[class*="title"]',
+            'h1[class*="product"]',
+            'h1[id*="title"]',
+            'h1[id*="product"]',
+            'title',
+            'h1'
+        ]
+        
+        for selector in selectors:
+            element = soup.select_one(selector)
+            if element and element.get_text().strip():
+                return element.get_text().strip()
+        
+        return "Product Title Not Found"
+
+    def extract_price(self, soup):
+        """Extract product price from page."""
+        # Try multiple price selectors
+        selectors = [
+            '.price-current',
+            '.price',
+            '.product-price',
+            '[class*="price"]',
+            '[data-testid*="price"]',
+            '.cost',
+            '.amount',
+            '[class*="cost"]'
+        ]
+        
+        for selector in selectors:
+            elements = soup.select(selector)
+            for element in elements:
+                text = element.get_text().strip()
+                # Look for price patterns
+                price_match = re.search(r'[\$€£¥₽]\s*[\d,]+\.?\d*|\d+[,.]?\d*\s*[\$€£¥₽]', text)
+                if price_match:
+                    return price_match.group()
+        
+        return "Price Not Found"
+
+    def extract_description(self, soup):
+        """Extract product description from page."""
+        selectors = [
+            '.product-description',
+            '.description',
+            '[class*="description"]',
+            '.product-details',
+            '.product-info',
+            '[class*="details"]',
+            '.product-summary',
+            'meta[name="description"]'
+        ]
+        
+        for selector in selectors:
+            element = soup.select_one(selector)
+            if element:
+                if element.name == 'meta':
+                    desc = element.get('content', '').strip()
+                else:
+                    desc = element.get_text().strip()
+                
+                if desc and len(desc) > 20:
+                    return desc[:500]  # Limit description length
+        
+        return "Description Not Found"
+
+    def extract_image(self, soup, base_url):
+        """Extract product image URL."""
+        selectors = [
+            '.product-image img',
+            '.main-image img',
+            '[class*="product"] img',
+            '[class*="main"] img',
+            'img[alt*="product"]',
+            'img[class*="product"]',
+            'img[src*="product"]'
+        ]
+        
+        for selector in selectors:
+            element = soup.select_one(selector)
+            if element:
+                src = element.get('src') or element.get('data-src')
+                if src:
+                    return urljoin(base_url, src)
+        
+        return None
+
+    def extract_brand(self, soup):
+        """Extract product brand from page."""
+        selectors = [
+            '.brand',
+            '.product-brand',
+            '[class*="brand"]',
+            '[data-testid*="brand"]',
+            'meta[property="product:brand"]',
+            'span[itemprop="brand"]'
+        ]
+        
+        for selector in selectors:
+            element = soup.select_one(selector)
+            if element:
+                if element.name == 'meta':
+                    brand = element.get('content', '').strip()
+                else:
+                    brand = element.get_text().strip()
+                
+                if brand and len(brand) < 50:
+                    return brand
+        
+        return "Brand Not Found"
+
+    async def analyze_product_with_ai(self, raw_data):
+        """Use AI to analyze and clean up product information."""
+        try:
+            # Create a concise prompt to save tokens
+            prompt = f"""Analyze this product data and extract key information:
+
+URL: {raw_data['url']}
+Title: {raw_data['title']}
+Price: {raw_data['price']}
+Brand: {raw_data['brand']}
+Description: {raw_data['description']}
+
+Extract and return ONLY:
+1. Clean product name (max 50 chars)
+2. Category (Electronics/Fashion/Home/Beauty/Other)
+3. Key features (max 100 chars)
+4. Clean price if found
+
+Format: NAME|CATEGORY|FEATURES|PRICE"""
+
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a product data analyzer. Be concise to save tokens."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=150,  # Limit tokens to save money
+                temperature=0.1
+            )
+            
+            result = response.choices[0].message.content.strip()
+            parts = result.split('|')
+            
+            if len(parts) >= 4:
+                return {
+                    'name': parts[0].strip(),
+                    'category': parts[1].strip(),
+                    'features': parts[2].strip(),
+                    'price': parts[3].strip(),
+                    'brand': raw_data['brand'],
+                    'image_url': raw_data['image_url'],
+                    'url': raw_data['url']
+                }
+            else:
+                # Fallback to raw data if AI parsing fails
+                return {
+                    'name': raw_data['title'][:50],
+                    'category': 'Other',
+                    'features': raw_data['description'][:100],
+                    'price': raw_data['price'],
+                    'brand': raw_data['brand'],
+                    'image_url': raw_data['image_url'],
+                    'url': raw_data['url']
+                }
+                
+        except Exception as e:
+            # Fallback to raw data if AI fails
+            return {
+                'name': raw_data['title'][:50],
+                'category': 'Other', 
+                'features': raw_data['description'][:100],
+                'price': raw_data['price'],
+                'brand': raw_data['brand'],
+                'image_url': raw_data['image_url'],
+                'url': raw_data['url']
+            }
+
+    def get_my_products_keyboard(self, context):
+        """Create keyboard for My Products menu."""
+        products = context.user_data.get('products', [])
+        
+        if not products:
+            keyboard = [
+                [InlineKeyboardButton("➕ Add Product Link", callback_data='add_product')],
+                [InlineKeyboardButton("⬅️ Back to Main Menu", callback_data='main_menu')]
+            ]
+        else:
+            keyboard = []
+            
+            # Show products (max 5)
+            for i, product in enumerate(products):
+                keyboard.append([InlineKeyboardButton(
+                    f"📦 {product['name'][:25]}{'...' if len(product['name']) > 25 else ''}", 
+                    callback_data=f'product_{i}'
+                )])
+            
+            # Add controls
+            keyboard.append([
+                InlineKeyboardButton("➕ Add Product", callback_data='add_product'),
+                InlineKeyboardButton("🗑️ Clear All", callback_data='clear_products')
+            ])
+            keyboard.append([InlineKeyboardButton("⬅️ Back to Main Menu", callback_data='main_menu')])
+        
+        return InlineKeyboardMarkup(keyboard)
+
+    def get_product_detail_keyboard(self, context, product_index):
+        """Create keyboard for individual product details."""
+        keyboard = [
+            [InlineKeyboardButton("🎯 Generate Promo", callback_data=f'gen_promo_{product_index}')],
+            [InlineKeyboardButton("🗑️ Delete Product", callback_data=f'delete_product_{product_index}'),
+             InlineKeyboardButton("🔗 Open Link", url=context.user_data['products'][product_index]['url'])],
+            [InlineKeyboardButton("⬅️ Back to Products", callback_data='my_products')]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Send the welcome message with language selection."""
         # If user doesn't have a language set, show language selection first
@@ -383,8 +648,6 @@ class PromoBot:
             await self.show_main_menu(query, context)
         elif query.data == 'generate_promo':
             await self.show_generate_promo(query, context)
-        elif query.data == 'categories':
-            await self.show_categories(query, context)
         elif query.data == 'examples':
             await self.show_examples(query, context)
         elif query.data == 'help':
@@ -410,6 +673,22 @@ class PromoBot:
             await self.edit_post_text(query, context)
         elif query.data == 'cancel_post':
             await self.cancel_post(query, context)
+        # Product management callbacks
+        elif query.data == 'my_products':
+            await self.show_my_products(query, context)
+        elif query.data == 'add_product':
+            await self.prompt_add_product(query, context)
+        elif query.data == 'clear_products':
+            await self.clear_all_products(query, context)
+        elif query.data.startswith('product_'):
+            product_index = int(query.data.split('_')[1])
+            await self.show_product_detail(query, context, product_index)
+        elif query.data.startswith('delete_product_'):
+            product_index = int(query.data.split('_')[2])
+            await self.delete_product(query, context, product_index)
+        elif query.data.startswith('gen_promo_'):
+            product_index = int(query.data.split('_')[2])
+            await self.generate_product_promo(query, context, product_index)
 
     async def handle_language_selection(self, query, context):
         """Handle language selection."""
@@ -448,27 +727,18 @@ class PromoBot:
             reply_markup=self.get_back_to_menu_keyboard(context)
         )
 
-    async def show_categories(self, query, context):
-        """Show product categories."""
-        text = f"{self.get_text('categories_title', context)}\n\n{self.get_text('categories_subtitle', context)}"
+    async def show_help(self, query, context):
+        """Show help information."""
         await query.edit_message_text(
-            text=text,
+            text=self.get_text('help_content', context),
             parse_mode='Markdown',
-            reply_markup=self.get_categories_keyboard(context)
+            reply_markup=self.get_back_to_menu_keyboard(context)
         )
 
     async def show_examples(self, query, context):
         """Show example promotional texts."""
         await query.edit_message_text(
             text=self.get_text('examples_content', context),
-            parse_mode='Markdown',
-            reply_markup=self.get_back_to_menu_keyboard(context)
-        )
-
-    async def show_help(self, query, context):
-        """Show help information."""
-        await query.edit_message_text(
-            text=self.get_text('help_content', context),
             parse_mode='Markdown',
             reply_markup=self.get_back_to_menu_keyboard(context)
         )
@@ -723,6 +993,10 @@ class PromoBot:
         # Handle post editing
         if await self.handle_post_edit(update, context):
             return
+            
+        # Handle product link input
+        if await self.handle_product_link(update, context):
+            return
         
         # Handle regular product name input for text generation
         await self.generate_promo_text(update, context)
@@ -824,6 +1098,242 @@ class PromoBot:
                 self.get_text('general_error', context),
                 reply_markup=self.get_main_menu_keyboard(context)
             )
+
+    async def show_my_products(self, query, context):
+        """Show My Products menu."""
+        products = context.user_data.get('products', [])
+        
+        if not products:
+            text = "📦 **My Products**\n\nNo products added yet!\n\nAdd product links to start creating amazing promotional content. I can analyze any e-commerce link and extract product information automatically.\n\n**Supported:** Amazon, eBay, AliExpress, Shopify stores, and many more!"
+        else:
+            text = f"📦 **My Products ({len(products)}/5)**\n\nYour saved products:\n\n"
+            for i, product in enumerate(products, 1):
+                text += f"{i}. **{product['name']}**\n   💰 {product['price']} | 📂 {product['category']}\n\n"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_my_products_keyboard(context)
+        )
+
+    async def prompt_add_product(self, query, context):
+        """Prompt user to add a product link."""
+        products = context.user_data.get('products', [])
+        
+        if len(products) >= 5:
+            text = "📦 **Product Limit Reached**\n\nYou can only store 5 products at a time. Please delete some products first or clear all to add new ones.\n\nThis limit helps keep the bot fast and efficient! 🚀"
+        else:
+            context.user_data['waiting_for_product_link'] = True
+            text = f"🔗 **Add Product Link ({len(products)}/5)**\n\nSend me a product link from any online store!\n\n**Examples:**\n• Amazon: https://amazon.com/product-name\n• eBay: https://ebay.com/itm/product\n• AliExpress: https://aliexpress.com/item/product\n• Any e-commerce site with product pages\n\n**What I'll extract:**\n✅ Product name & price\n✅ Description & features\n✅ Brand & category\n✅ Product image\n\nJust paste the link below! 👇"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_back_to_menu_keyboard(context)
+        )
+
+    async def clear_all_products(self, query, context):
+        """Clear all products with confirmation."""
+        products = context.user_data.get('products', [])
+        
+        if not products:
+            text = "📦 **No Products to Clear**\n\nYou don't have any products saved yet."
+        else:
+            context.user_data['products'] = []
+            text = f"🗑️ **All Products Cleared**\n\nRemoved {len(products)} products from your list. You can now add new products!"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_my_products_keyboard(context)
+        )
+
+    async def show_product_detail(self, query, context, product_index):
+        """Show detailed information about a specific product."""
+        products = context.user_data.get('products', [])
+        
+        if product_index >= len(products):
+            await query.edit_message_text(
+                "❌ Product not found.",
+                reply_markup=self.get_my_products_keyboard(context)
+            )
+            return
+        
+        product = products[product_index]
+        
+        text = f"📦 **Product Details**\n\n"
+        text += f"**Name:** {product['name']}\n"
+        text += f"**Price:** {product['price']}\n"
+        text += f"**Brand:** {product['brand']}\n"
+        text += f"**Category:** {product['category']}\n"
+        text += f"**Features:** {product['features']}\n\n"
+        text += f"Ready to create promotional content for this product?"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_product_detail_keyboard(context, product_index)
+        )
+
+    async def delete_product(self, query, context, product_index):
+        """Delete a specific product."""
+        products = context.user_data.get('products', [])
+        
+        if product_index >= len(products):
+            await query.edit_message_text(
+                "❌ Product not found.",
+                reply_markup=self.get_my_products_keyboard(context)
+            )
+            return
+        
+        product_name = products[product_index]['name']
+        del products[product_index]
+        context.user_data['products'] = products
+        
+        text = f"🗑️ **Product Deleted**\n\n**{product_name}** has been removed from your products list."
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_my_products_keyboard(context)
+        )
+
+    async def generate_product_promo(self, query, context, product_index):
+        """Generate promotional text for a specific product."""
+        products = context.user_data.get('products', [])
+        
+        if product_index >= len(products):
+            await query.edit_message_text(
+                "❌ Product not found.",
+                reply_markup=self.get_my_products_keyboard(context)
+            )
+            return
+        
+        product = products[product_index]
+        
+        # Show typing action
+        await context.bot.send_chat_action(chat_id=query.message.chat.id, action='typing')
+        
+        try:
+            # Create product-specific prompt
+            product_info = f"Product: {product['name']}\nPrice: {product['price']}\nBrand: {product['brand']}\nCategory: {product['category']}\nKey Features: {product['features']}"
+            
+            prompt = f"Create a compelling promotional post for this product:\n\n{product_info}\n\nThe promotional text should:\n- Be engaging and attention-grabbing\n- Highlight key benefits and features\n- Include a strong call-to-action\n- Be suitable for social media posting\n- Use emojis appropriately\n- Be between 50-150 words\n- Sound persuasive and professional\n- Include trending marketing language when appropriate"
+            
+            system_prompt = self.get_text('system_prompt', context)
+            
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=300,
+                temperature=0.7
+            )
+            
+            promo_text = response.choices[0].message.content.strip()
+            
+            # Store for channel posting
+            context.user_data['last_generated_text'] = promo_text
+            context.user_data['last_product_name'] = product['name']
+            
+            # Format response
+            text = f"🎯 **Promotional Text for: {product['name']}**\n\n{promo_text}\n\n---\n💡 *Feel free to customize this text for your specific needs!*"
+            
+            await query.edit_message_text(
+                text=text,
+                parse_mode='Markdown',
+                reply_markup=self.get_post_generation_keyboard(context)
+            )
+            
+            # Check for auto-posting
+            channel_info = context.user_data.get('channel_info', {})
+            if channel_info.get('auto_post', False) and channel_info.get('channel_id'):
+                success, message = await self.post_to_channel_action(context, promo_text, product['name'])
+                
+                status_emoji = "✅" if success else "❌"
+                auto_post_msg = f"\n\n{status_emoji} **Auto-post:** {message}"
+                
+                try:
+                    await query.edit_message_text(
+                        text + auto_post_msg,
+                        parse_mode='Markdown',
+                        reply_markup=self.get_post_generation_keyboard(context)
+                    )
+                except:
+                    pass
+        
+        except Exception as e:
+            logger.error(f"Error generating product promo: {e}")
+            await query.edit_message_text(
+                f"❌ Error generating promotional text: {str(e)}",
+                reply_markup=self.get_product_detail_keyboard(context, product_index)
+            )
+
+    async def handle_product_link(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle product link input from user."""
+        if not context.user_data.get('waiting_for_product_link'):
+            return False
+        
+        url = update.message.text.strip()
+        context.user_data['waiting_for_product_link'] = False
+        
+        # Validate URL
+        if not self.is_valid_url(url):
+            await update.message.reply_text(
+                "❌ **Invalid URL**\n\nPlease send a valid product link starting with http:// or https://",
+                parse_mode='Markdown',
+                reply_markup=self.get_my_products_keyboard(context)
+            )
+            return True
+        
+        # Show processing message
+        processing_msg = await update.message.reply_text(
+            "🔄 **Analyzing Product...**\n\nExtracting information from the link...",
+            parse_mode='Markdown'
+        )
+        
+        # Scrape product info
+        raw_data = await self.scrape_product_info(url)
+        
+        if isinstance(raw_data, tuple):  # Error occurred
+            await processing_msg.edit_text(
+                f"❌ **Extraction Failed**\n\n{raw_data[1]}\n\n**Suggestions:**\n• Try a different product link\n• Make sure the link is public\n• Check if the website allows automated access",
+                parse_mode='Markdown',
+                reply_markup=self.get_my_products_keyboard(context)
+            )
+            return True
+        
+        # Analyze with AI
+        await processing_msg.edit_text(
+            "🤖 **Analyzing with AI...**\n\nProcessing product information...",
+            parse_mode='Markdown'
+        )
+        
+        product_data = await self.analyze_product_with_ai(raw_data)
+        
+        # Store product
+        if 'products' not in context.user_data:
+            context.user_data['products'] = []
+        
+        context.user_data['products'].append(product_data)
+        
+        # Show success message
+        text = f"✅ **Product Added Successfully!**\n\n"
+        text += f"**Name:** {product_data['name']}\n"
+        text += f"**Price:** {product_data['price']}\n"
+        text += f"**Brand:** {product_data['brand']}\n"
+        text += f"**Category:** {product_data['category']}\n\n"
+        text += f"Product saved to your list ({len(context.user_data['products'])}/5)!"
+        
+        await processing_msg.edit_text(
+            text,
+            parse_mode='Markdown',
+            reply_markup=self.get_my_products_keyboard(context)
+        )
+        
+        return True
 
     def run(self):
         """Start the bot."""
