@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
 Main entry point for the Telegram Promo Text Generator Bot
-Modular architecture with security and error handling
+Simplified version without web dashboard
 """
 
-import asyncio
 import logging
 import sys
 from pathlib import Path
@@ -34,13 +33,9 @@ def main():
         
         logger.info("🚀 Starting Telegram Promo Bot...")
         logger.info(f"📁 Data directory: {config.data_directory}")
-        logger.info(f"🌐 Web dashboard: {'Enabled' if config.web_dashboard_enabled else 'Disabled'}")
         
         # Create and run bot
         bot = PromoBot()
-        
-        # Note: Web dashboard temporarily disabled for testing
-        # TODO: Implement proper async web dashboard integration
         
         # Run the bot
         logger.info("🤖 Bot is starting up...")
