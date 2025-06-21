@@ -165,7 +165,27 @@ TRANSLATIONS = {
         'translate_to_russian': '🇷🇺 Russian',
         'translate_to_romanian': '🇷🇴 Romanian',
         'edit_generated_title': '✏️ **Edit Generated Text**',
-        'edit_generated_instructions': 'Send me your edited version of the promotional text:'
+        'edit_generated_instructions': 'Send me your edited version of the promotional text:',
+        'stop_bot': '🛑 Stop Bot',
+        'bot_stopped_title': '🛑 **Bot Stopped**',
+        'bot_stopped_message': 'The bot has been stopped. Use /start to restart the bot anytime.',
+        'confirm_stop_title': '🛑 **Confirm Stop**',
+        'confirm_stop_message': 'Are you sure you want to stop the bot? This will end your current session.',
+        'confirm_stop_btn': '✅ Yes, Stop Bot',
+        'cancel_stop_btn': '❌ Cancel',
+        'name_label': 'Name',
+        'price_label': 'Price',
+        'brand_label': 'Brand',
+        'category_label': 'Category',
+        'features_label': 'Features',
+        'product_info_product': 'Product',
+        'product_info_price': 'Price',
+        'product_info_brand': 'Brand',
+        'product_info_category': 'Category',
+        'product_info_features': 'Key Features',
+        'channel_label': 'Channel',
+        'product_label': 'Product',
+        'preview_label': 'Preview'
     },
     'ru': {
         'welcome_title': '🚀 **Добро пожаловать в бот генератора рекламных текстов!** 🚀',
@@ -279,7 +299,27 @@ TRANSLATIONS = {
         'translate_to_russian': '🇷🇺 Русский',
         'translate_to_romanian': '🇷🇴 Румынский',
         'edit_generated_title': '✏️ **Редактировать сгенерированный текст**',
-        'edit_generated_instructions': 'Отправьте мне отредактированную версию рекламного текста:'
+        'edit_generated_instructions': 'Отправьте мне отредактированную версию рекламного текста:',
+        'stop_bot': '🛑 Остановить бота',
+        'bot_stopped_title': '🛑 **Бот остановлен**',
+        'bot_stopped_message': 'Бот был остановлен. Используйте /start, чтобы перезапустить бота в любое время.',
+        'confirm_stop_title': '🛑 **Подтвердить остановку**',
+        'confirm_stop_message': 'Вы уверены, что хотите остановить бота? Это завершит вашу текущую сессию.',
+        'confirm_stop_btn': '✅ Да, остановить бота',
+        'cancel_stop_btn': '❌ Отменить',
+        'name_label': 'Название',
+        'price_label': 'Цена',
+        'brand_label': 'Бренд',
+        'category_label': 'Категория',
+        'features_label': 'Особенности',
+        'product_info_product': 'Товар',
+        'product_info_price': 'Цена',
+        'product_info_brand': 'Бренд',
+        'product_info_category': 'Категория',
+        'product_info_features': 'Ключевые особенности',
+        'channel_label': 'Канал',
+        'product_label': 'Товар',
+        'preview_label': 'Предпросмотр'
     },
     'ro': {
         'welcome_title': '🚀 **Bun venit la botul generator de texte promoționale!** 🚀',
@@ -393,7 +433,27 @@ TRANSLATIONS = {
         'translate_to_russian': '🇷🇺 Rusă',
         'translate_to_romanian': '🇷🇴 Română',
         'edit_generated_title': '✏️ **Editează textul generat**',
-        'edit_generated_instructions': 'Trimite-mi versiunea editată a textului promoțional:'
+        'edit_generated_instructions': 'Trimite-mi versiunea editată a textului promoțional:',
+        'stop_bot': '🛑 Oprire bot',
+        'bot_stopped_title': '🛑 **Bot oprit**',
+        'bot_stopped_message': 'Botul a fost oprit. Folosește /start pentru a relua botul în orice moment.',
+        'confirm_stop_title': '🛑 **Confirmă oprirea**',
+        'confirm_stop_message': 'Ești sigur că vrei să oprești botul? Aceasta va încheia sesiunea curentă.',
+        'confirm_stop_btn': '✅ Da, oprește botul',
+        'cancel_stop_btn': '❌ Renunță',
+        'name_label': 'Nume',
+        'price_label': 'Preț',
+        'brand_label': 'Marcă',
+        'category_label': 'Categorie',
+        'features_label': 'Caracteristici',
+        'product_info_product': 'Produs',
+        'product_info_price': 'Preț',
+        'product_info_brand': 'Marcă',
+        'product_info_category': 'Categorie',
+        'product_info_features': 'Caracteristici cheie',
+        'channel_label': 'Canal',
+        'product_label': 'Produs',
+        'preview_label': 'Previzualizare'
     }
 }
 
@@ -431,10 +491,11 @@ class PromoBot:
         keyboard = [
             [InlineKeyboardButton(self.get_text('generate_promo', context), callback_data='generate_promo'),
              InlineKeyboardButton(self.get_text('my_products', context), callback_data='my_products')],
-            [InlineKeyboardButton(self.get_text('examples', context), callback_data='examples'),
-             InlineKeyboardButton(self.get_text('help', context), callback_data='help')],
             [InlineKeyboardButton(self.get_text('channel_settings', context), callback_data='channel_settings'),
-             InlineKeyboardButton(self.get_text('language', context), callback_data='language_select')]
+             InlineKeyboardButton(self.get_text('help', context), callback_data='help')],
+            [InlineKeyboardButton(self.get_text('examples', context), callback_data='examples'),
+             InlineKeyboardButton(self.get_text('language', context), callback_data='language_select')],
+            [InlineKeyboardButton(self.get_text('stop_bot', context), callback_data='confirm_stop')]
         ]
         return InlineKeyboardMarkup(keyboard)
 
@@ -921,6 +982,24 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
             reply_markup=self.get_main_menu_keyboard(context)
         )
 
+    async def stop_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /stop command."""
+        # Ensure user has a language set
+        if 'language' not in context.user_data:
+            context.user_data['language'] = 'en'
+        
+        # Show confirmation
+        keyboard = [
+            [InlineKeyboardButton(self.get_text('confirm_stop_btn', context), callback_data='stop_bot'),
+             InlineKeyboardButton(self.get_text('cancel_stop_btn', context), callback_data='main_menu')]
+        ]
+        
+        await update.message.reply_text(
+            f"{self.get_text('confirm_stop_title', context)}\n\n{self.get_text('confirm_stop_message', context)}",
+            parse_mode='Markdown',
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
     async def button_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle button press callbacks."""
         query = update.callback_query
@@ -989,6 +1068,10 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         elif query.data.startswith('translate_'):
             target_lang = query.data.split('_')[1]
             await self.perform_translation(query, context, target_lang)
+        elif query.data == 'confirm_stop':
+            await self.show_stop_confirmation(query, context)
+        elif query.data == 'stop_bot':
+            await self.stop_bot(query, context)
 
     async def show_generate_promo(self, query, context):
         """Show the promo generation choice menu."""
@@ -1202,10 +1285,10 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         products = context.user_data.get('products', [])
         
         if not products:
-            text = "📦 **No Products to Clear**\n\nYou don't have any products saved yet."
+            text = self.get_text('no_products_to_clear', context)
         else:
             context.user_data['products'] = []
-            text = f"🗑️ **All Products Cleared**\n\nRemoved {len(products)} products from your list. You can now add new products!"
+            text = self.get_text('products_cleared', context, len(products))
         
         await query.edit_message_text(
             text=text,
@@ -1219,20 +1302,20 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         
         if product_index >= len(products):
             await query.edit_message_text(
-                "❌ Product not found.",
+                self.get_text('product_not_found', context),
                 reply_markup=self.get_my_products_keyboard(context)
             )
             return
         
         product = products[product_index]
         
-        text = f"📦 **Product Details**\n\n"
-        text += f"**Name:** {product['name']}\n"
-        text += f"**Price:** {product['price']}\n"
-        text += f"**Brand:** {product['brand']}\n"
-        text += f"**Category:** {product['category']}\n"
-        text += f"**Features:** {product['features']}\n\n"
-        text += f"Ready to create promotional content for this product?"
+        text = f"{self.get_text('product_details_title', context)}\n\n"
+        text += f"**{self.get_text('name_label', context)}:** {product['name']}\n"
+        text += f"**{self.get_text('price_label', context)}:** {product['price']}\n"
+        text += f"**{self.get_text('brand_label', context)}:** {product['brand']}\n"
+        text += f"**{self.get_text('category_label', context)}:** {product['category']}\n"
+        text += f"**{self.get_text('features_label', context)}:** {product['features']}\n\n"
+        text += self.get_text('product_details_question', context)
         
         await query.edit_message_text(
             text=text,
@@ -1246,7 +1329,7 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         
         if product_index >= len(products):
             await query.edit_message_text(
-                "❌ Product not found.",
+                self.get_text('product_not_found', context),
                 reply_markup=self.get_my_products_keyboard(context)
             )
             return
@@ -1255,7 +1338,7 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         del products[product_index]
         context.user_data['products'] = products
         
-        text = f"🗑️ **Product Deleted**\n\n**{product_name}** has been removed from your products list."
+        text = f"{self.get_text('product_deleted_title', context)}\n\n{self.get_text('product_deleted_message', context, product_name)}"
         
         await query.edit_message_text(
             text=text,
@@ -1269,7 +1352,7 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         
         if product_index >= len(products):
             await query.edit_message_text(
-                "❌ Product not found.",
+                self.get_text('product_not_found', context),
                 reply_markup=self.get_my_products_keyboard(context)
             )
             return
@@ -1281,7 +1364,7 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         
         try:
             # Create product-specific prompt
-            product_info = f"Product: {product['name']}\nPrice: {product['price']}\nBrand: {product['brand']}\nCategory: {product['category']}\nKey Features: {product['features']}"
+            product_info = f"{self.get_text('product_info_product', context)}: {product['name']}\n{self.get_text('product_info_price', context)}: {product['price']}\n{self.get_text('product_info_brand', context)}: {product['brand']}\n{self.get_text('product_info_category', context)}: {product['category']}\n{self.get_text('product_info_features', context)}: {product['features']}"
             
             # Use the translated prompt with product info
             prompt = self.get_text('openai_prompt', context, product_info, product_info)
@@ -1423,10 +1506,10 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         
         # Show success message
         text = f"{self.get_text('product_added_title', context)}\n\n"
-        text += f"**Name:** {product_data['name']}\n"
-        text += f"**Price:** {product_data['price']}\n"
-        text += f"**Brand:** {product_data['brand']}\n"
-        text += f"**Category:** {product_data['category']}\n\n"
+        text += f"**{self.get_text('name_label', context)}:** {product_data['name']}\n"
+        text += f"**{self.get_text('price_label', context)}:** {product_data['price']}\n"
+        text += f"**{self.get_text('brand_label', context)}:** {product_data['brand']}\n"
+        text += f"**{self.get_text('category_label', context)}:** {product_data['category']}\n\n"
         text += self.get_text('product_added_message', context, len(context.user_data['products']))
         
         await processing_msg.edit_text(
@@ -1743,7 +1826,7 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
             hashtags = self.generate_hashtags(pending_post['product'], context)
             preview_text = f"{pending_post['text']}\n\n{hashtags}"
         
-        text = f"{self.get_text('confirm_edited_post_title', context)}\n\nChannel: @{channel_id}\nProduct: {pending_post['product']}\n\n**Preview:**\n{preview_text[:200]}{'...' if len(preview_text) > 200 else ''}"
+        text = f"{self.get_text('confirm_edited_post_title', context)}\n\n{self.get_text('channel_label', context)}: @{channel_id}\n{self.get_text('product_label', context)}: {pending_post['product']}\n\n**{self.get_text('preview_label', context)}:**\n{preview_text[:200]}{'...' if len(preview_text) > 200 else ''}"
         
         await update.message.reply_text(
             text=text,
@@ -1890,6 +1973,29 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         )
         return True
 
+    async def show_stop_confirmation(self, query, context):
+        """Show stop confirmation dialog."""
+        keyboard = [
+            [InlineKeyboardButton(self.get_text('confirm_stop_btn', context), callback_data='stop_bot'),
+             InlineKeyboardButton(self.get_text('cancel_stop_btn', context), callback_data='main_menu')]
+        ]
+        
+        await query.edit_message_text(
+            f"{self.get_text('confirm_stop_title', context)}\n\n{self.get_text('confirm_stop_message', context)}",
+            parse_mode='Markdown',
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+    async def stop_bot(self, query, context):
+        """Stop the bot for this user."""
+        # Clear all user data
+        context.user_data.clear()
+        
+        await query.edit_message_text(
+            f"{self.get_text('bot_stopped_title', context)}\n\n{self.get_text('bot_stopped_message', context)}",
+            parse_mode='Markdown'
+        )
+
     def run(self):
         """Start the bot."""
         # Create the Application
@@ -1898,6 +2004,7 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         # Add handlers
         application.add_handler(CommandHandler("start", self.start))
         application.add_handler(CommandHandler("help", self.help_command))
+        application.add_handler(CommandHandler("stop", self.stop_command))
         application.add_handler(CallbackQueryHandler(self.button_callback))
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
 
