@@ -47,5 +47,14 @@ Thumbs.db
 # Logs
 *.log
 
+# Runtime data (should not be committed)
+data/
+data/*
+data/users.json
+data/stats.json
+data/bot.log
+data/backups/
+data/backups/*
+
 # User files
 text.txt 
