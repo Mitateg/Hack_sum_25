@@ -114,6 +114,29 @@ class PromoBot:
         ]
         return InlineKeyboardMarkup(keyboard)
 
+    def get_promo_creation_choice_keyboard(self, context):
+        """Create keyboard for promo creation choice."""
+        keyboard = [
+            [InlineKeyboardButton(self.get_text('from_my_products', context), callback_data='promo_from_product'),
+             InlineKeyboardButton(self.get_text('from_prompt', context), callback_data='promo_from_prompt')],
+            [InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    def get_product_selection_keyboard(self, context):
+        """Create keyboard for selecting a product to generate promo from."""
+        products = context.user_data.get('products', [])
+        keyboard = []
+        
+        for i, product in enumerate(products):
+            keyboard.append([InlineKeyboardButton(
+                f"📦 {product['name'][:30]}{'...' if len(product['name']) > 30 else ''}", 
+                callback_data=f'select_product_{i}'
+            )])
+        
+        keyboard.append([InlineKeyboardButton(self.get_text('back_menu', context), callback_data='generate_promo')])
+        return InlineKeyboardMarkup(keyboard)
+
     def get_post_generation_keyboard(self, context):
         """Create keyboard for after text generation with channel posting option."""
         channel_info = context.user_data.get('channel_info', {})
@@ -282,6 +305,13 @@ class PromoBot:
             await self.show_generate_promo(query, context)
         elif query.data == 'from_prompt':
             await self.show_promo_from_prompt(query, context)
+        elif query.data == 'promo_from_product':
+            await self.show_promo_from_product(query, context)
+        elif query.data == 'promo_from_prompt':
+            await self.show_promo_from_prompt(query, context)
+        elif query.data.startswith('select_product_'):
+            product_index = int(query.data.split('_')[2])
+            await self.generate_product_promo(query, context, product_index)
         elif query.data == 'generate_another':
             context.user_data.pop('awaiting_promo_input', None)
             await self.show_promo_from_prompt(query, context)
@@ -365,7 +395,7 @@ class PromoBot:
 
         try:
             # Create the prompt for OpenAI in the user's language
-            prompt = self.get_text('openai_prompt', context, product_name)
+            prompt = self.get_text('openai_prompt', context, product_name, product_name)
             system_prompt = self.get_text('system_prompt', context)
 
             # Generate response using OpenAI
@@ -804,26 +834,19 @@ class PromoBot:
         """Show promo generation options."""
         products = context.user_data.get('products', [])
         
-        if products:
-            keyboard = [
-                [InlineKeyboardButton(self.get_text('from_my_products', context), callback_data='my_products')],
-                [InlineKeyboardButton(self.get_text('from_prompt', context), callback_data='from_prompt')],
-                [InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]
-            ]
-            
-            promo_text = f"{self.get_text('promo_choice_title', context)}\n\n{self.get_text('promo_choice_subtitle', context, len(products))}"
+        if not products:
+            # No products available, go directly to prompt-based
+            await query.edit_message_text(
+                f"{self.get_text('generate_title', context)}\n\n{self.get_text('generate_instructions', context)}",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]])
+            )
         else:
-            keyboard = [
-                [InlineKeyboardButton(self.get_text('from_prompt', context), callback_data='from_prompt')],
-                [InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]
-            ]
-            
-            promo_text = f"{self.get_text('promo_choice_title', context)}\n\n{self.get_text('no_products_available', context)}"
-        
-        await query.edit_message_text(
-            promo_text,
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+            # Show choice between product-based and prompt-based
+            promo_text = f"{self.get_text('promo_choice_title', context)}\n\n{self.get_text('promo_choice_subtitle', context, len(products))}"
+            await query.edit_message_text(
+                promo_text,
+                reply_markup=self.get_promo_creation_choice_keyboard(context)
+            )
     
     async def show_promo_from_prompt(self, query, context):
         """Show promo from prompt instructions."""
@@ -833,6 +856,21 @@ class PromoBot:
             f"{self.get_text('generate_title', context)}\n\n{self.get_text('generate_instructions', context)}",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]])
         )
+
+    async def show_promo_from_product(self, query, context):
+        """Show product selection for promo generation."""
+        products = context.user_data.get('products', [])
+        
+        if not products:
+            await query.edit_message_text(
+                f"{self.get_text('promo_choice_title', context)}\n\n{self.get_text('no_products_available', context)}",
+                reply_markup=self.get_promo_creation_choice_keyboard(context)
+            )
+        else:
+            await query.edit_message_text(
+                self.get_text('select_product_title', context, len(products)),
+                reply_markup=self.get_product_selection_keyboard(context)
+            )
     
     async def show_stop_confirmation(self, query, context):
         """Show stop confirmation."""
