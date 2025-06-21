@@ -172,7 +172,8 @@ class PromoBot:
              InlineKeyboardButton(self.get_text('categories', context), callback_data='categories')],
             [InlineKeyboardButton(self.get_text('examples', context), callback_data='examples'),
              InlineKeyboardButton(self.get_text('help', context), callback_data='help')],
-            [InlineKeyboardButton(self.get_text('language', context), callback_data='language_select')]
+            [InlineKeyboardButton("📢 Channel Settings", callback_data='channel_settings'),
+             InlineKeyboardButton(self.get_text('language', context), callback_data='language_select')]
         ]
         return InlineKeyboardMarkup(keyboard)
 
@@ -196,13 +197,142 @@ class PromoBot:
         ]
         return InlineKeyboardMarkup(keyboard)
 
+    def get_channel_settings_keyboard(self, context):
+        """Create keyboard for channel settings."""
+        channel_info = context.user_data.get('channel_info', {})
+        channel_id = channel_info.get('channel_id')
+        auto_post = channel_info.get('auto_post', False)
+        
+        if channel_id:
+            keyboard = [
+                [InlineKeyboardButton(f"📋 Current: {channel_id}", callback_data='channel_info')],
+                [InlineKeyboardButton("✏️ Change Channel", callback_data='set_channel'),
+                 InlineKeyboardButton("❌ Remove Channel", callback_data='remove_channel')],
+                [InlineKeyboardButton(f"🤖 Auto-post: {'✅ ON' if auto_post else '❌ OFF'}", callback_data='toggle_autopost')],
+                [InlineKeyboardButton("📊 Post History", callback_data='post_history')],
+                [InlineKeyboardButton("⬅️ Back to Main Menu", callback_data='main_menu')]
+            ]
+        else:
+            keyboard = [
+                [InlineKeyboardButton("➕ Add Channel/Group", callback_data='set_channel')],
+                [InlineKeyboardButton("⬅️ Back to Main Menu", callback_data='main_menu')]
+            ]
+        return InlineKeyboardMarkup(keyboard)
+
     def get_post_generation_keyboard(self, context):
-        """Create keyboard for after text generation in grid format."""
+        """Create keyboard for after text generation with channel posting option."""
+        channel_info = context.user_data.get('channel_info', {})
+        has_channel = bool(channel_info.get('channel_id'))
+        
+        if has_channel:
+            keyboard = [
+                [InlineKeyboardButton("🔄 Generate Another", callback_data='generate_promo'),
+                 InlineKeyboardButton("📤 Post to Channel", callback_data='post_to_channel')],
+                [InlineKeyboardButton("⬅️ Main Menu", callback_data='main_menu')]
+            ]
+        else:
+            keyboard = [
+                [InlineKeyboardButton("🔄 Generate Another", callback_data='generate_promo'),
+                 InlineKeyboardButton("⬅️ Main Menu", callback_data='main_menu')]
+            ]
+        return InlineKeyboardMarkup(keyboard)
+
+    def get_post_confirmation_keyboard(self, context):
+        """Create keyboard for post confirmation."""
         keyboard = [
-            [InlineKeyboardButton(self.get_text('generate_another', context), callback_data='generate_promo'),
-             InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]
+            [InlineKeyboardButton("✅ Post Now", callback_data='confirm_post'),
+             InlineKeyboardButton("✏️ Edit Text", callback_data='edit_post')],
+            [InlineKeyboardButton("❌ Cancel", callback_data='cancel_post')]
         ]
         return InlineKeyboardMarkup(keyboard)
+
+    async def verify_channel_permissions(self, context, channel_id):
+        """Verify bot has admin permissions in channel/group."""
+        try:
+            # Remove @ if present
+            if channel_id.startswith('@'):
+                channel_id = channel_id[1:]
+            
+            # Get chat member (bot) info
+            bot_member = await context.bot.get_chat_member(f"@{channel_id}", context.bot.id)
+            
+            # Check if bot is admin
+            if bot_member.status not in ['administrator', 'creator']:
+                return False, "Bot is not an administrator in this channel/group"
+            
+            # Check if bot can post messages
+            if hasattr(bot_member, 'can_post_messages') and not bot_member.can_post_messages:
+                return False, "Bot doesn't have permission to post messages"
+            
+            # Send test message and delete it
+            test_msg = await context.bot.send_message(f"@{channel_id}", "🤖 Bot verification test - this message will be deleted")
+            await context.bot.delete_message(f"@{channel_id}", test_msg.message_id)
+            
+            return True, "Permissions verified successfully"
+            
+        except Exception as e:
+            return False, f"Error: {str(e)}"
+
+    def generate_hashtags(self, product_name, context):
+        """Generate relevant hashtags for the product."""
+        # Basic hashtag generation - can be enhanced
+        words = product_name.lower().replace('-', ' ').replace('_', ' ').split()
+        hashtags = []
+        
+        # Add product-specific hashtags
+        for word in words:
+            if len(word) > 2:  # Skip short words
+                hashtags.append(f"#{word}")
+        
+        # Add general marketing hashtags
+        hashtags.extend(["#promo", "#sale", "#newproduct", "#shopping"])
+        
+        return " ".join(hashtags[:8])  # Limit to 8 hashtags
+
+    async def post_to_channel_action(self, context, text, product_name):
+        """Post the promotional text to configured channel."""
+        channel_info = context.user_data.get('channel_info', {})
+        channel_id = channel_info.get('channel_id')
+        
+        if not channel_id:
+            return False, "No channel configured"
+        
+        try:
+            # Generate hashtags
+            hashtags = self.generate_hashtags(product_name, context)
+            
+            # Format final post
+            final_post = f"{text}\n\n{hashtags}"
+            
+            # Post to channel
+            sent_message = await context.bot.send_message(f"@{channel_id}", final_post)
+            
+            # Store post history
+            if 'post_history' not in context.user_data:
+                context.user_data['post_history'] = []
+            
+            context.user_data['post_history'].append({
+                'product': product_name,
+                'timestamp': sent_message.date.strftime('%Y-%m-%d %H:%M'),
+                'message_id': sent_message.message_id,
+                'status': 'success'
+            })
+            
+            return True, f"Posted successfully to {channel_id}"
+            
+        except Exception as e:
+            # Store failed post
+            if 'post_history' not in context.user_data:
+                context.user_data['post_history'] = []
+            
+            context.user_data['post_history'].append({
+                'product': product_name,
+                'timestamp': 'Failed',
+                'message_id': None,
+                'status': f'failed: {str(e)}'
+            })
+            
+            return False, f"Failed to post: {str(e)}"
 
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Send the welcome message with language selection."""
@@ -261,6 +391,25 @@ class PromoBot:
             await self.show_help(query, context)
         elif query.data.startswith('cat_'):
             await self.show_category_info(query, context)
+        # Channel management callbacks
+        elif query.data == 'channel_settings':
+            await self.show_channel_settings(query, context)
+        elif query.data == 'set_channel':
+            await self.prompt_channel_setup(query, context)
+        elif query.data == 'remove_channel':
+            await self.remove_channel(query, context)
+        elif query.data == 'toggle_autopost':
+            await self.toggle_autopost(query, context)
+        elif query.data == 'post_history':
+            await self.show_post_history(query, context)
+        elif query.data == 'post_to_channel':
+            await self.initiate_channel_post(query, context)
+        elif query.data == 'confirm_post':
+            await self.confirm_channel_post(query, context)
+        elif query.data == 'edit_post':
+            await self.edit_post_text(query, context)
+        elif query.data == 'cancel_post':
+            await self.cancel_post(query, context)
 
     async def handle_language_selection(self, query, context):
         """Handle language selection."""
@@ -324,6 +473,22 @@ class PromoBot:
             reply_markup=self.get_back_to_menu_keyboard(context)
         )
 
+    async def show_channel_settings(self, query, context):
+        """Show channel settings menu."""
+        channel_info = context.user_data.get('channel_info', {})
+        channel_id = channel_info.get('channel_id')
+        
+        if channel_id:
+            text = f"📢 **Channel Settings**\n\nConfigured channel: @{channel_id}\nAuto-post: {'✅ Enabled' if channel_info.get('auto_post', False) else '❌ Disabled'}"
+        else:
+            text = "📢 **Channel Settings**\n\nNo channel configured yet. Add a channel to start posting your promotional content automatically!"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_channel_settings_keyboard(context)
+        )
+
     async def show_category_info(self, query, context):
         """Show information about a specific category."""
         # For now, showing a simplified version - you can expand this with translated category info
@@ -335,6 +500,232 @@ class PromoBot:
             parse_mode='Markdown',
             reply_markup=self.get_back_to_menu_keyboard(context)
         )
+
+    async def prompt_channel_setup(self, query, context):
+        """Prompt user to enter channel ID."""
+        context.user_data['waiting_for_channel'] = True
+        text = "📢 **Add Channel/Group**\n\nPlease send me the channel/group username (with @) or ID.\n\n**Example:** @mychannel\n\n**Note:** The bot must be added as an administrator to the channel/group with posting permissions."
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_back_to_menu_keyboard(context)
+        )
+
+    async def remove_channel(self, query, context):
+        """Remove configured channel."""
+        if 'channel_info' in context.user_data:
+            del context.user_data['channel_info']
+        
+        text = "✅ **Channel Removed**\n\nChannel configuration has been removed. You can add a new channel anytime from the settings."
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_channel_settings_keyboard(context)
+        )
+
+    async def toggle_autopost(self, query, context):
+        """Toggle auto-posting feature."""
+        channel_info = context.user_data.get('channel_info', {})
+        auto_post = not channel_info.get('auto_post', False)
+        
+        channel_info['auto_post'] = auto_post
+        context.user_data['channel_info'] = channel_info
+        
+        status = "enabled" if auto_post else "disabled"
+        text = f"🤖 **Auto-posting {status.title()}**\n\nAuto-posting is now {status}. Generated promotional texts will {'automatically' if auto_post else 'not'} be posted to your channel."
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_channel_settings_keyboard(context)
+        )
+
+    async def show_post_history(self, query, context):
+        """Show posting history."""
+        history = context.user_data.get('post_history', [])
+        
+        if not history:
+            text = "📊 **Post History**\n\nNo posts yet. Generate some promotional content and post to your channel!"
+        else:
+            text = "📊 **Post History**\n\n"
+            for i, post in enumerate(history[-10:], 1):  # Show last 10 posts
+                status_emoji = "✅" if post['status'] == 'success' else "❌"
+                text += f"{i}. {status_emoji} **{post['product']}**\n   {post['timestamp']} - {post['status']}\n\n"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_back_to_menu_keyboard(context)
+        )
+
+    async def handle_channel_input(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle channel ID input from user."""
+        if not context.user_data.get('waiting_for_channel'):
+            return False
+        
+        channel_input = update.message.text.strip()
+        context.user_data['waiting_for_channel'] = False
+        
+        # Validate and verify channel
+        success, message = await self.verify_channel_permissions(context, channel_input)
+        
+        if success:
+            # Store channel info
+            context.user_data['channel_info'] = {
+                'channel_id': channel_input.replace('@', ''),
+                'auto_post': False
+            }
+            
+            text = f"✅ **Channel Added Successfully**\n\nChannel @{channel_input.replace('@', '')} has been configured!\n\n{message}"
+        else:
+            text = f"❌ **Channel Setup Failed**\n\n{message}\n\nPlease make sure:\n1. The bot is added to the channel/group\n2. The bot has administrator permissions\n3. The bot can post messages"
+        
+        await update.message.reply_text(
+            text,
+            parse_mode='Markdown',
+            reply_markup=self.get_channel_settings_keyboard(context)
+        )
+        return True
+
+    async def initiate_channel_post(self, query, context):
+        """Initiate posting to channel with confirmation."""
+        stored_text = context.user_data.get('last_generated_text', '')
+        product_name = context.user_data.get('last_product_name', '')
+        
+        if not stored_text:
+            await query.edit_message_text(
+                "❌ No promotional text found. Please generate text first.",
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+            return
+        
+        channel_info = context.user_data.get('channel_info', {})
+        channel_id = channel_info.get('channel_id', 'Unknown')
+        
+        # Store for posting
+        context.user_data['pending_post'] = {
+            'text': stored_text,
+            'product': product_name
+        }
+        
+        hashtags = self.generate_hashtags(product_name, context)
+        preview_text = f"{stored_text}\n\n{hashtags}"
+        
+        text = f"📤 **Confirm Channel Post**\n\nChannel: @{channel_id}\nProduct: {product_name}\n\n**Preview:**\n{preview_text[:200]}{'...' if len(preview_text) > 200 else ''}"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_post_confirmation_keyboard(context)
+        )
+
+    async def confirm_channel_post(self, query, context):
+        """Confirm and execute channel post."""
+        pending_post = context.user_data.get('pending_post', {})
+        
+        if not pending_post:
+            await query.edit_message_text(
+                "❌ No pending post found.",
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+            return
+        
+        # Post to channel
+        success, message = await self.post_to_channel_action(
+            context, 
+            pending_post['text'], 
+            pending_post['product']
+        )
+        
+        # Clean up
+        if 'pending_post' in context.user_data:
+            del context.user_data['pending_post']
+        
+        status_emoji = "✅" if success else "❌"
+        text = f"{status_emoji} **Post {('Successful' if success else 'Failed')}**\n\n{message}"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_back_to_menu_keyboard(context)
+        )
+
+    async def edit_post_text(self, query, context):
+        """Allow user to edit post text before posting."""
+        context.user_data['editing_post'] = True
+        text = "✏️ **Edit Post Text**\n\nSend me the edited version of your promotional text. You can modify it as needed before posting to the channel."
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_back_to_menu_keyboard(context)
+        )
+
+    async def cancel_post(self, query, context):
+        """Cancel the pending post."""
+        if 'pending_post' in context.user_data:
+            del context.user_data['pending_post']
+        
+        text = "❌ **Post Cancelled**\n\nThe post has been cancelled. You can generate new promotional text or return to the main menu."
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_back_to_menu_keyboard(context)
+        )
+
+    async def handle_post_edit(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle edited post text."""
+        if not context.user_data.get('editing_post'):
+            return False
+        
+        edited_text = update.message.text.strip()
+        context.user_data['editing_post'] = False
+        
+        # Update pending post
+        if 'pending_post' in context.user_data:
+            context.user_data['pending_post']['text'] = edited_text
+            
+            # Show confirmation again
+            await self.initiate_channel_post_from_edit(update, context)
+        else:
+            await update.message.reply_text(
+                "❌ No pending post found.",
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+        return True
+
+    async def initiate_channel_post_from_edit(self, update, context):
+        """Show post confirmation after editing."""
+        pending_post = context.user_data.get('pending_post', {})
+        channel_info = context.user_data.get('channel_info', {})
+        channel_id = channel_info.get('channel_id', 'Unknown')
+        
+        hashtags = self.generate_hashtags(pending_post['product'], context)
+        preview_text = f"{pending_post['text']}\n\n{hashtags}"
+        
+        text = f"📤 **Confirm Edited Post**\n\nChannel: @{channel_id}\nProduct: {pending_post['product']}\n\n**Preview:**\n{preview_text[:200]}{'...' if len(preview_text) > 200 else ''}"
+        
+        await update.message.reply_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_post_confirmation_keyboard(context)
+        )
+
+    async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle text messages from users."""
+        # Handle channel input
+        if await self.handle_channel_input(update, context):
+            return
+        
+        # Handle post editing
+        if await self.handle_post_edit(update, context):
+            return
+        
+        # Handle regular product name input for text generation
+        await self.generate_promo_text(update, context)
 
     async def generate_promo_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Generate promotional text for the given product."""
@@ -350,7 +741,7 @@ class PromoBot:
                 reply_markup=self.get_main_menu_keyboard(context)
             )
             return
-
+        
         # Show typing action
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
 
@@ -371,7 +762,11 @@ class PromoBot:
             )
 
             promo_text = response.choices[0].message.content.strip()
-
+            
+            # Store the generated text and product name for potential channel posting
+            context.user_data['last_generated_text'] = promo_text
+            context.user_data['last_product_name'] = product_name
+            
             # Format the response
             formatted_response = f"""
 {self.get_text('promo_result', context, product_name)}
@@ -387,6 +782,30 @@ class PromoBot:
                 parse_mode='Markdown',
                 reply_markup=self.get_post_generation_keyboard(context)
             )
+            
+            # Check for auto-posting
+            channel_info = context.user_data.get('channel_info', {})
+            if channel_info.get('auto_post', False) and channel_info.get('channel_id'):
+                # Auto post to channel
+                success, message = await self.post_to_channel_action(context, promo_text, product_name)
+                
+                # Notify user about auto-post result
+                status_emoji = "✅" if success else "❌"
+                auto_post_msg = f"\n\n{status_emoji} **Auto-post:** {message}"
+                
+                # Edit the previous message to include auto-post status
+                try:
+                    await update.message.edit_text(
+                        formatted_response + auto_post_msg,
+                        parse_mode='Markdown',
+                        reply_markup=self.get_post_generation_keyboard(context)
+                    )
+                except:
+                    # If editing fails, send a new message
+                    await update.message.reply_text(
+                        auto_post_msg,
+                        parse_mode='Markdown'
+                    )
 
         except openai.error.RateLimitError:
             await update.message.reply_text(
@@ -415,7 +834,7 @@ class PromoBot:
         application.add_handler(CommandHandler("start", self.start))
         application.add_handler(CommandHandler("help", self.help_command))
         application.add_handler(CallbackQueryHandler(self.button_callback))
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.generate_promo_text))
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
 
         # Run the bot
         logger.info("Starting the Promo Bot...")
