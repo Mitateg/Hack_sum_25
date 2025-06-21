@@ -157,34 +157,34 @@ class PromoBot:
         return text
 
     def get_language_selection_keyboard(self):
-        """Create language selection keyboard."""
+        """Create language selection keyboard in grid format."""
         keyboard = [
-            [InlineKeyboardButton("🇺🇸 English", callback_data='lang_en')],
-            [InlineKeyboardButton("🇷🇺 Русский", callback_data='lang_ru')],
+            [InlineKeyboardButton("🇺🇸 English", callback_data='lang_en'), 
+             InlineKeyboardButton("🇷🇺 Русский", callback_data='lang_ru')],
             [InlineKeyboardButton("🇷🇴 Română", callback_data='lang_ro')]
         ]
         return InlineKeyboardMarkup(keyboard)
 
     def get_main_menu_keyboard(self, context):
-        """Create the main menu inline keyboard."""
+        """Create the main menu inline keyboard in grid format."""
         keyboard = [
-            [InlineKeyboardButton(self.get_text('generate_promo', context), callback_data='generate_promo')],
-            [InlineKeyboardButton(self.get_text('categories', context), callback_data='categories')],
-            [InlineKeyboardButton(self.get_text('examples', context), callback_data='examples')],
-            [InlineKeyboardButton(self.get_text('help', context), callback_data='help')],
+            [InlineKeyboardButton(self.get_text('generate_promo', context), callback_data='generate_promo'),
+             InlineKeyboardButton(self.get_text('categories', context), callback_data='categories')],
+            [InlineKeyboardButton(self.get_text('examples', context), callback_data='examples'),
+             InlineKeyboardButton(self.get_text('help', context), callback_data='help')],
             [InlineKeyboardButton(self.get_text('language', context), callback_data='language_select')]
         ]
         return InlineKeyboardMarkup(keyboard)
 
     def get_categories_keyboard(self, context):
-        """Create the product categories inline keyboard."""
+        """Create the product categories inline keyboard in grid format."""
         keyboard = [
-            [InlineKeyboardButton(self.get_text('electronics', context), callback_data='cat_electronics')],
-            [InlineKeyboardButton(self.get_text('fashion', context), callback_data='cat_fashion')],
-            [InlineKeyboardButton(self.get_text('home', context), callback_data='cat_home')],
-            [InlineKeyboardButton(self.get_text('beauty', context), callback_data='cat_beauty')],
-            [InlineKeyboardButton(self.get_text('gaming', context), callback_data='cat_gaming')],
-            [InlineKeyboardButton(self.get_text('books', context), callback_data='cat_books')],
+            [InlineKeyboardButton(self.get_text('electronics', context), callback_data='cat_electronics'),
+             InlineKeyboardButton(self.get_text('fashion', context), callback_data='cat_fashion')],
+            [InlineKeyboardButton(self.get_text('home', context), callback_data='cat_home'),
+             InlineKeyboardButton(self.get_text('beauty', context), callback_data='cat_beauty')],
+            [InlineKeyboardButton(self.get_text('gaming', context), callback_data='cat_gaming'),
+             InlineKeyboardButton(self.get_text('books', context), callback_data='cat_books')],
             [InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]
         ]
         return InlineKeyboardMarkup(keyboard)
@@ -193,6 +193,14 @@ class PromoBot:
         """Create a simple back to menu keyboard."""
         keyboard = [
             [InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    def get_post_generation_keyboard(self, context):
+        """Create keyboard for after text generation in grid format."""
+        keyboard = [
+            [InlineKeyboardButton(self.get_text('generate_another', context), callback_data='generate_promo'),
+             InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]
         ]
         return InlineKeyboardMarkup(keyboard)
 
@@ -364,13 +372,6 @@ class PromoBot:
 
             promo_text = response.choices[0].message.content.strip()
 
-            # Create keyboard for after generation
-            keyboard = [
-                [InlineKeyboardButton(self.get_text('generate_another', context), callback_data='generate_promo')],
-                [InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-
             # Format the response
             formatted_response = f"""
 {self.get_text('promo_result', context, product_name)}
@@ -384,7 +385,7 @@ class PromoBot:
             await update.message.reply_text(
                 formatted_response, 
                 parse_mode='Markdown',
-                reply_markup=reply_markup
+                reply_markup=self.get_post_generation_keyboard(context)
             )
 
         except openai.error.RateLimitError:
