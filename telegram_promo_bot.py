@@ -33,21 +33,13 @@ TRANSLATIONS = {
         'main_menu_title': '🚀 **Promo Text Generator Bot - Main Menu**',
         'main_menu_subtitle': 'Choose an option to continue:',
         'generate_promo': '🎯 Generate Promo Text',
-        'categories': '📝 Product Categories',
+        'my_products': '📦 My Products',
         'examples': '💡 Examples',
         'help': '❓ Help',
         'language': '🌍 Language',
         'back_menu': '⬅️ Back to Main Menu',
         'generate_title': '🎯 **Generate Promotional Text**',
         'generate_instructions': 'Ready to create amazing promotional content!\n\n**How to proceed:**\n1. Simply type the name of your product in the chat\n2. I\'ll generate compelling promotional text for you\n3. You can then copy and use it for your marketing!\n\n**Examples of what to send:**\n• "Wireless Bluetooth Headphones"\n• "Organic Green Tea"\n• "Gaming Mechanical Keyboard"\n• "Women\'s Running Shoes"\n\nJust type your product name below! 👇',
-        'categories_title': '📝 **Product Categories**',
-        'categories_subtitle': 'Select a category to get tips and inspiration for your promotional text:',
-        'electronics': '📱 Electronics',
-        'fashion': '👕 Fashion',
-        'home': '🏠 Home & Garden',
-        'beauty': '💄 Beauty',
-        'gaming': '🎮 Gaming',
-        'books': '📚 Books',
         'examples_title': '💡 **Example Promotional Texts**',
         'examples_content': 'Here are some examples of what I can generate:\n\n**🎧 Wireless Headphones:**\n*"Experience freedom with our premium wireless headphones! 🎵 Crystal-clear sound, 30-hour battery life, and noise cancellation technology. Perfect for work, travel, and workouts. Order now and get FREE shipping! 🚚"*\n\n**👟 Running Shoes:**\n*"Step up your game with our lightweight running shoes! 🏃‍♀️ Advanced cushioning, breathable mesh, and durable design. Whether you\'re training for a marathon or daily jogs, these shoes will keep you comfortable. Get yours today! 💪"*\n\n**📱 Smartphone:**\n*"Capture life in stunning detail with our latest smartphone! 📸 Professional-grade camera, all-day battery, and lightning-fast performance. Stay connected, create memories, and experience technology at its finest. Available now! ✨"*\n\nReady to create your own? Just type any product name!',
         'help_title': '❓ **Help & Support**',
@@ -71,21 +63,13 @@ TRANSLATIONS = {
         'main_menu_title': '🚀 **Бот генератора рекламных текстов - Главное меню**',
         'main_menu_subtitle': 'Выберите опцию для продолжения:',
         'generate_promo': '🎯 Создать рекламный текст',
-        'categories': '📝 Категории товаров',
+        'my_products': '📦 Мои товары',
         'examples': '💡 Примеры', 
         'help': '❓ Помощь',
         'language': '🌍 Язык',
         'back_menu': '⬅️ Назад в главное меню',
         'generate_title': '🎯 **Создание рекламного текста**',
         'generate_instructions': 'Готов создать потрясающий рекламный контент!\n\n**Как продолжить:**\n1. Просто напишите название вашего товара в чате\n2. Я создам убедительный рекламный текст для вас\n3. Вы сможете скопировать и использовать его для маркетинга!\n\n**Примеры того, что отправить:**\n• "Беспроводные Bluetooth наушники"\n• "Органический зеленый чай"\n• "Игровая механическая клавиатура"\n• "Женские кроссовки для бега"\n\nПросто введите название товара ниже! 👇',
-        'categories_title': '📝 **Категории товаров**',
-        'categories_subtitle': 'Выберите категорию для получения советов и вдохновения для рекламного текста:',
-        'electronics': '📱 Электроника',
-        'fashion': '👕 Мода',
-        'home': '🏠 Дом и сад',
-        'beauty': '💄 Красота',
-        'gaming': '🎮 Игры',
-        'books': '📚 Книги',
         'examples_title': '💡 **Примеры рекламных текстов**',
         'examples_content': 'Вот несколько примеров того, что я могу создать:\n\n**🎧 Беспроводные наушники:**\n*"Почувствуйте свободу с нашими премиальными беспроводными наушниками! 🎵 Кристально чистый звук, 30-часовая батарея и технология шумоподавления. Идеально для работы, путешествий и тренировок. Заказывайте сейчас и получите БЕСПЛАТНУЮ доставку! 🚚"*\n\n**👟 Кроссовки для бега:**\n*"Поднимите свою игру с нашими легкими кроссовками для бега! 🏃‍♀️ Продвинутая амортизация, дышащий материал и прочный дизайн. Готовитесь к марафону или ежедневным пробежкам - эти кроссовки обеспечат комфорт. Получите свои уже сегодня! 💪"*\n\n**📱 Смартфон:**\n*"Запечатлейте жизнь в потрясающих деталях с нашим новейшим смартфоном! 📸 Профессиональная камера, батарея на весь день и молниеносная производительность. Оставайтесь на связи, создавайте воспоминания и наслаждайтесь технологиями. Доступно сейчас! ✨"*\n\nГотовы создать свой? Просто введите любое название товара!',
         'help_title': '❓ **Помощь и поддержка**',
@@ -109,21 +93,13 @@ TRANSLATIONS = {
         'main_menu_title': '🚀 **Bot generator de texte promoționale - Meniul principal**',
         'main_menu_subtitle': 'Alege o opțiune pentru a continua:',
         'generate_promo': '🎯 Generează text promoțional',
-        'categories': '📝 Categorii de produse',
+        'my_products': '📦 Produsele mele',
         'examples': '💡 Exemple',
         'help': '❓ Ajutor',
         'language': '🌍 Limba',
         'back_menu': '⬅️ Înapoi la meniul principal',
         'generate_title': '🎯 **Generare text promoțional**',
         'generate_instructions': 'Gata să creez conținut promoțional uimitor!\n\n**Cum să continui:**\n1. Pur și simplu scrie numele produsului tău în chat\n2. Voi genera un text promoțional convingător pentru tine\n3. Apoi îl poți copia și folosi pentru marketing!\n\n**Exemple de ce să trimiți:**\n• "Căști Bluetooth wireless"\n• "Ceai verde organic"\n• "Tastatură mecanică pentru gaming"\n• "Pantofi de alergare pentru femei"\n\nScrie numele produsului mai jos! 👇',
-        'categories_title': '📝 **Categorii de produse**',
-        'categories_subtitle': 'Selectează o categorie pentru sfaturi și inspirație pentru textul promoțional:',
-        'electronics': '📱 Electronice',
-        'fashion': '👕 Modă',
-        'home': '🏠 Casă și grădină',
-        'beauty': '💄 Frumusețe',
-        'gaming': '🎮 Gaming',
-        'books': '📚 Cărți',
         'examples_title': '💡 **Exemple de texte promoționale**',
         'examples_content': 'Iată câteva exemple de ce pot genera:\n\n**🎧 Căști wireless:**\n*"Simte libertatea cu căștile noastre premium wireless! 🎵 Sunet cristalin, baterie de 30 de ore și tehnologie de anulare a zgomotului. Perfect pentru muncă, călătorii și antrenamente. Comandă acum și beneficiezi de livrare GRATUITĂ! 🚚"*\n\n**👟 Pantofi de alergare:**\n*"Ridică-ți nivelul cu pantofii noștri ușori de alergare! 🏃‍♀️ Amortizare avansată, material respirabil și design durabil. Fie că te antrenezi pentru maraton sau pentru alergări zilnice, acești pantofi te vor menține confortabil. Obține-i astăzi! 💪"*\n\n**📱 Smartphone:**\n*"Surprinde viața în detalii uimitoare cu cel mai nou smartphone! 📸 Cameră de nivel profesional, baterie pentru toată ziua și performanță fulgerătoare. Rămâi conectat, creează amintiri și experimentează tehnologia la cel mai înalt nivel. Disponibil acum! ✨"*\n\nGata să creezi propriul tău? Scrie orice nume de produs!',
         'help_title': '❓ **Ajutor și suport**',
@@ -175,7 +151,7 @@ class PromoBot:
         """Create the main menu inline keyboard in grid format."""
         keyboard = [
             [InlineKeyboardButton(self.get_text('generate_promo', context), callback_data='generate_promo'),
-             InlineKeyboardButton("📦 My Products", callback_data='my_products')],
+             InlineKeyboardButton(self.get_text('my_products', context), callback_data='my_products')],
             [InlineKeyboardButton(self.get_text('examples', context), callback_data='examples'),
              InlineKeyboardButton(self.get_text('help', context), callback_data='help')],
             [InlineKeyboardButton("📢 Channel Settings", callback_data='channel_settings'),
@@ -592,11 +568,33 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
     def get_product_detail_keyboard(self, context, product_index):
         """Create keyboard for individual product details."""
         keyboard = [
-            [InlineKeyboardButton("🎯 Generate Promo", callback_data=f'gen_promo_{product_index}')],
             [InlineKeyboardButton("🗑️ Delete Product", callback_data=f'delete_product_{product_index}'),
              InlineKeyboardButton("🔗 Open Link", url=context.user_data['products'][product_index]['url'])],
             [InlineKeyboardButton("⬅️ Back to Products", callback_data='my_products')]
         ]
+        return InlineKeyboardMarkup(keyboard)
+
+    def get_promo_creation_choice_keyboard(self, context):
+        """Create keyboard for promo creation choice."""
+        keyboard = [
+            [InlineKeyboardButton("📦 From My Products", callback_data='promo_from_product'),
+             InlineKeyboardButton("✏️ From Prompt", callback_data='promo_from_prompt')],
+            [InlineKeyboardButton("⬅️ Back to Main Menu", callback_data='main_menu')]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    def get_product_selection_keyboard(self, context):
+        """Create keyboard for selecting a product to generate promo from."""
+        products = context.user_data.get('products', [])
+        keyboard = []
+        
+        for i, product in enumerate(products):
+            keyboard.append([InlineKeyboardButton(
+                f"📦 {product['name'][:30]}{'...' if len(product['name']) > 30 else ''}", 
+                callback_data=f'select_product_{i}'
+            )])
+        
+        keyboard.append([InlineKeyboardButton("⬅️ Back to Generation Menu", callback_data='generate_promo')])
         return InlineKeyboardMarkup(keyboard)
 
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -672,8 +670,7 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         elif query.data == 'edit_post':
             await self.edit_post_text(query, context)
         elif query.data == 'cancel_post':
-            await self.cancel_post(query, context)
-        # Product management callbacks
+            await self.cancel_post(query, context)        # Product management callbacks
         elif query.data == 'my_products':
             await self.show_my_products(query, context)
         elif query.data == 'add_product':
@@ -689,6 +686,449 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         elif query.data.startswith('gen_promo_'):
             product_index = int(query.data.split('_')[2])
             await self.generate_product_promo(query, context, product_index)
+        elif query.data == 'promo_from_product':
+            await self.show_promo_from_product(query, context)
+        elif query.data == 'promo_from_prompt':
+            await self.show_promo_from_prompt(query, context)
+        elif query.data.startswith('select_product_'):
+            product_index = int(query.data.split('_')[2])
+            await self.generate_product_promo(query, context, product_index)
+
+    async def show_generate_promo(self, query, context):
+        """Show the promo generation choice menu."""
+        products = context.user_data.get('products', [])
+        
+        if not products:
+            # No products available, go directly to prompt-based
+            await query.edit_message_text(
+                text=self.get_text('generate_instructions', context),
+                parse_mode='Markdown',
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+        else:
+            # Show choice between product-based and prompt-based
+            text = f"🎯 **Generate Promotional Text**\n\nChoose how you want to create your promo:\n\n📦 **From My Products** - Generate promo from your saved products ({len(products)} available)\n\n✏️ **From Prompt** - Create promo by typing a product name\n\nWhat would you like to do?"
+            await query.edit_message_text(
+                text=text,
+                parse_mode='Markdown',
+                reply_markup=self.get_promo_creation_choice_keyboard(context)
+            )
+
+    async def show_promo_from_product(self, query, context):
+        """Show product selection for promo generation."""
+        products = context.user_data.get('products', [])
+        
+        if not products:
+            text = "📦 **No Products Available**\n\nYou don't have any saved products yet. Add some products first or create a promo from a prompt!"
+            await query.edit_message_text(
+                text=text,
+                parse_mode='Markdown',
+                reply_markup=self.get_promo_creation_choice_keyboard(context)
+            )
+        else:
+            text = f"📦 **Select Product ({len(products)} available)**\n\nChoose a product to generate promotional text for:"
+            await query.edit_message_text(
+                text=text,
+                parse_mode='Markdown',
+                reply_markup=self.get_product_selection_keyboard(context)
+            )
+
+    async def show_promo_from_prompt(self, query, context):
+        """Show prompt-based promo generation instructions."""
+        await query.edit_message_text(
+            text=self.get_text('generate_instructions', context),
+            parse_mode='Markdown',
+            reply_markup=self.get_back_to_menu_keyboard(context)
+        )
+
+    async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle text messages from users."""
+        # Handle channel input
+        if await self.handle_channel_input(update, context):
+            return
+        
+        # Handle post editing
+        if await self.handle_post_edit(update, context):
+            return
+            
+        # Handle product link input
+        if await self.handle_product_link(update, context):
+            return
+        
+        # Handle regular product name input for text generation
+        await self.generate_promo_text(update, context)
+
+    async def generate_promo_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Generate promotional text for the given product."""
+        # Ensure user has a language set
+        if 'language' not in context.user_data:
+            context.user_data['language'] = 'en'
+
+        product_name = update.message.text.strip()
+        
+        if not product_name:
+            await update.message.reply_text(
+                self.get_text('empty_product', context),
+                reply_markup=self.get_main_menu_keyboard(context)
+            )
+            return
+        
+        # Show typing action
+        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
+
+        try:
+            # Create the prompt for OpenAI in the user's language
+            prompt = self.get_text('openai_prompt', context, product_name, product_name)
+            system_prompt = self.get_text('system_prompt', context)
+
+            # Generate response using OpenAI
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=300,
+                temperature=0.7
+            )
+
+            promo_text = response.choices[0].message.content.strip()
+            
+            # Store the generated text and product name for potential channel posting
+            context.user_data['last_generated_text'] = promo_text
+            context.user_data['last_product_name'] = product_name
+            
+            # Format the response
+            formatted_response = f"""
+{self.get_text('promo_result', context, product_name)}
+
+{promo_text}
+
+---
+{self.get_text('promo_footer', context)}
+            """
+
+            await update.message.reply_text(
+                formatted_response, 
+                parse_mode='Markdown',
+                reply_markup=self.get_post_generation_keyboard(context)
+            )
+            
+            # Check for auto-posting
+            channel_info = context.user_data.get('channel_info', {})
+            if channel_info.get('auto_post', False) and channel_info.get('channel_id'):
+                # Auto post to channel
+                success, message = await self.post_to_channel_action(context, promo_text, product_name)
+                
+                # Notify user about auto-post result
+                status_emoji = "✅" if success else "❌"
+                auto_post_msg = f"\n\n{status_emoji} **Auto-post:** {message}"
+                
+                # Edit the previous message to include auto-post status
+                try:
+                    await update.message.edit_text(
+                        formatted_response + auto_post_msg,
+                        parse_mode='Markdown',
+                        reply_markup=self.get_post_generation_keyboard(context)
+                    )
+                except:
+                    # If editing fails, send a new message
+                    await update.message.reply_text(
+                        auto_post_msg,
+                        parse_mode='Markdown'
+                    )
+
+        except openai.error.RateLimitError:
+            try:
+                await update.message.reply_text(
+                    self.get_text('rate_limit', context),
+                    reply_markup=self.get_main_menu_keyboard(context)
+                )
+            except:
+                pass
+        except openai.error.InvalidRequestError as e:
+            logger.error(f"Invalid request to OpenAI: {e}")
+            try:
+                await update.message.reply_text(
+                    self.get_text('request_error', context),
+                    reply_markup=self.get_main_menu_keyboard(context)
+                )
+            except:
+                pass
+        except Exception as e:
+            logger.error(f"Error generating promo text: {e}")
+            try:
+                await update.message.reply_text(
+                    self.get_text('general_error', context),
+                    reply_markup=self.get_main_menu_keyboard(context)
+                )
+            except:
+                pass
+
+    async def show_my_products(self, query, context):
+        """Show My Products menu."""
+        products = context.user_data.get('products', [])
+        
+        if not products:
+            text = "📦 **My Products**\n\nNo products added yet!\n\nAdd product links to start creating amazing promotional content. I can analyze any e-commerce link and extract product information automatically.\n\n**Supported:** Amazon, eBay, AliExpress, Shopify stores, and many more!"
+        else:
+            text = f"📦 **My Products ({len(products)}/5)**\n\nYour saved products:\n\n"
+            for i, product in enumerate(products, 1):
+                text += f"{i}. **{product['name']}**\n   💰 {product['price']} | 📂 {product['category']}\n\n"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_my_products_keyboard(context)
+        )
+
+    async def prompt_add_product(self, query, context):
+        """Prompt user to add a product link."""
+        products = context.user_data.get('products', [])
+        
+        if len(products) >= 5:
+            text = "📦 **Product Limit Reached**\n\nYou can only store 5 products at a time. Please delete some products first or clear all to add new ones.\n\nThis limit helps keep the bot fast and efficient! 🚀"
+        else:
+            context.user_data['waiting_for_product_link'] = True
+            text = f"🔗 **Add Product Link ({len(products)}/5)**\n\nSend me a product link from any online store!\n\n**Examples:**\n• Amazon: https://amazon.com/product-name\n• eBay: https://ebay.com/itm/product\n• AliExpress: https://aliexpress.com/item/product\n• Any e-commerce site with product pages\n\n**What I'll extract:**\n✅ Product name & price\n✅ Description & features\n✅ Brand & category\n✅ Product image\n\nJust paste the link below! 👇"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_back_to_menu_keyboard(context)
+        )
+
+    async def clear_all_products(self, query, context):
+        """Clear all products with confirmation."""
+        products = context.user_data.get('products', [])
+        
+        if not products:
+            text = "📦 **No Products to Clear**\n\nYou don't have any products saved yet."
+        else:
+            context.user_data['products'] = []
+            text = f"🗑️ **All Products Cleared**\n\nRemoved {len(products)} products from your list. You can now add new products!"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_my_products_keyboard(context)
+        )
+
+    async def show_product_detail(self, query, context, product_index):
+        """Show detailed information about a specific product."""
+        products = context.user_data.get('products', [])
+        
+        if product_index >= len(products):
+            await query.edit_message_text(
+                "❌ Product not found.",
+                reply_markup=self.get_my_products_keyboard(context)
+            )
+            return
+        
+        product = products[product_index]
+        
+        text = f"📦 **Product Details**\n\n"
+        text += f"**Name:** {product['name']}\n"
+        text += f"**Price:** {product['price']}\n"
+        text += f"**Brand:** {product['brand']}\n"
+        text += f"**Category:** {product['category']}\n"
+        text += f"**Features:** {product['features']}\n\n"
+        text += f"Ready to create promotional content for this product?"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_product_detail_keyboard(context, product_index)
+        )
+
+    async def delete_product(self, query, context, product_index):
+        """Delete a specific product."""
+        products = context.user_data.get('products', [])
+        
+        if product_index >= len(products):
+            await query.edit_message_text(
+                "❌ Product not found.",
+                reply_markup=self.get_my_products_keyboard(context)
+            )
+            return
+        
+        product_name = products[product_index]['name']
+        del products[product_index]
+        context.user_data['products'] = products
+        
+        text = f"🗑️ **Product Deleted**\n\n**{product_name}** has been removed from your products list."
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_my_products_keyboard(context)
+        )
+
+    async def generate_product_promo(self, query, context, product_index):
+        """Generate promotional text for a specific product."""
+        products = context.user_data.get('products', [])
+        
+        if product_index >= len(products):
+            await query.edit_message_text(
+                "❌ Product not found.",
+                reply_markup=self.get_my_products_keyboard(context)
+            )
+            return
+        
+        product = products[product_index]
+        
+        # Show typing action
+        await context.bot.send_chat_action(chat_id=query.message.chat.id, action='typing')
+        
+        try:
+            # Create product-specific prompt
+            product_info = f"Product: {product['name']}\nPrice: {product['price']}\nBrand: {product['brand']}\nCategory: {product['category']}\nKey Features: {product['features']}"
+            
+            prompt = f"Create a compelling promotional post for this product:\n\n{product_info}\n\nThe promotional text should:\n- Be engaging and attention-grabbing\n- Highlight key benefits and features\n- Include a strong call-to-action\n- Be suitable for social media posting\n- Use emojis appropriately\n- Be between 50-150 words\n- Sound persuasive and professional\n- Include trending marketing language when appropriate"
+            
+            system_prompt = self.get_text('system_prompt', context)
+            
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=300,
+                temperature=0.7
+            )
+            
+            promo_text = response.choices[0].message.content.strip()
+            
+            # Store for channel posting
+            context.user_data['last_generated_text'] = promo_text
+            context.user_data['last_product_name'] = product['name']
+            
+            # Format response
+            text = f"🎯 **Promotional Text for: {product['name']}**\n\n{promo_text}\n\n---\n💡 *Feel free to customize this text for your specific needs!*"
+            
+            await query.edit_message_text(
+                text=text,
+                parse_mode='Markdown',
+                reply_markup=self.get_post_generation_keyboard(context)
+            )
+            
+            # Check for auto-posting
+            channel_info = context.user_data.get('channel_info', {})
+            if channel_info.get('auto_post', False) and channel_info.get('channel_id'):
+                success, message = await self.post_to_channel_action(context, promo_text, product['name'])
+                
+                status_emoji = "✅" if success else "❌"
+                auto_post_msg = f"\n\n{status_emoji} **Auto-post:** {message}"
+                
+                try:
+                    await query.edit_message_text(
+                        text + auto_post_msg,
+                        parse_mode='Markdown',
+                        reply_markup=self.get_post_generation_keyboard(context)
+                    )
+                except:
+                    pass
+        
+        except openai.error.RateLimitError:
+            try:
+                await query.edit_message_text(
+                    self.get_text('rate_limit', context),
+                    reply_markup=self.get_main_menu_keyboard(context)
+                )
+            except:
+                await query.message.reply_text(
+                    self.get_text('rate_limit', context),
+                    reply_markup=self.get_main_menu_keyboard(context)
+                )
+        except openai.error.InvalidRequestError as e:
+            logger.error(f"Invalid request to OpenAI: {e}")
+            try:
+                await query.edit_message_text(
+                    self.get_text('request_error', context),
+                    reply_markup=self.get_main_menu_keyboard(context)
+                )
+            except:
+                await query.message.reply_text(
+                    self.get_text('request_error', context),
+                    reply_markup=self.get_main_menu_keyboard(context)
+                )
+        except Exception as e:
+            logger.error(f"Error generating product promo: {e}")
+            try:
+                await query.edit_message_text(
+                    self.get_text('general_error', context),
+                    reply_markup=self.get_main_menu_keyboard(context)
+                )
+            except:
+                await query.message.reply_text(
+                    self.get_text('general_error', context),
+                    reply_markup=self.get_main_menu_keyboard(context)
+                )
+
+    async def handle_product_link(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle product link input from user."""
+        if not context.user_data.get('waiting_for_product_link'):
+            return False
+        
+        url = update.message.text.strip()
+        context.user_data['waiting_for_product_link'] = False
+        
+        # Validate URL
+        if not self.is_valid_url(url):
+            await update.message.reply_text(
+                "❌ **Invalid URL**\n\nPlease send a valid product link starting with http:// or https://",
+                parse_mode='Markdown',
+                reply_markup=self.get_my_products_keyboard(context)
+            )
+            return True
+        
+        # Show processing message
+        processing_msg = await update.message.reply_text(
+            "🔄 **Analyzing Product...**\n\nExtracting information from the link...",
+            parse_mode='Markdown'
+        )
+        
+        # Scrape product info
+        raw_data = await self.scrape_product_info(url)
+        
+        if isinstance(raw_data, tuple):  # Error occurred
+            await processing_msg.edit_text(
+                f"❌ **Extraction Failed**\n\n{raw_data[1]}\n\n**Suggestions:**\n• Try a different product link\n• Make sure the link is public\n• Check if the website allows automated access",
+                parse_mode='Markdown',
+                reply_markup=self.get_my_products_keyboard(context)
+            )
+            return True
+        
+        # Analyze with AI
+        await processing_msg.edit_text(
+            "🤖 **Analyzing with AI...**\n\nProcessing product information...",
+            parse_mode='Markdown'
+        )
+        
+        product_data = await self.analyze_product_with_ai(raw_data)
+        
+        # Store product
+        if 'products' not in context.user_data:
+            context.user_data['products'] = []
+        
+        context.user_data['products'].append(product_data)
+        
+        # Show success message
+        text = f"✅ **Product Added Successfully!**\n\n"
+        text += f"**Name:** {product_data['name']}\n"
+        text += f"**Price:** {product_data['price']}\n"
+        text += f"**Brand:** {product_data['brand']}\n"
+        text += f"**Category:** {product_data['category']}\n\n"
+        text += f"Product saved to your list ({len(context.user_data['products'])}/5)!"
+        
+        await processing_msg.edit_text(
+            text,
+            parse_mode='Markdown',
+            reply_markup=self.get_my_products_keyboard(context)
+        )
+        
+        return True
 
     async def handle_language_selection(self, query, context):
         """Handle language selection."""
@@ -717,14 +1157,6 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
             text=text,
             parse_mode='Markdown',
             reply_markup=self.get_main_menu_keyboard(context)
-        )
-
-    async def show_generate_promo(self, query, context):
-        """Show the generate promo text instructions."""
-        await query.edit_message_text(
-            text=self.get_text('generate_instructions', context),
-            parse_mode='Markdown',
-            reply_markup=self.get_back_to_menu_keyboard(context)
         )
 
     async def show_help(self, query, context):
@@ -983,357 +1415,6 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
             parse_mode='Markdown',
             reply_markup=self.get_post_confirmation_keyboard(context)
         )
-
-    async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle text messages from users."""
-        # Handle channel input
-        if await self.handle_channel_input(update, context):
-            return
-        
-        # Handle post editing
-        if await self.handle_post_edit(update, context):
-            return
-            
-        # Handle product link input
-        if await self.handle_product_link(update, context):
-            return
-        
-        # Handle regular product name input for text generation
-        await self.generate_promo_text(update, context)
-
-    async def generate_promo_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Generate promotional text for the given product."""
-        # Ensure user has a language set
-        if 'language' not in context.user_data:
-            context.user_data['language'] = 'en'
-
-        product_name = update.message.text.strip()
-        
-        if not product_name:
-            await update.message.reply_text(
-                self.get_text('empty_product', context),
-                reply_markup=self.get_main_menu_keyboard(context)
-            )
-            return
-        
-        # Show typing action
-        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
-
-        try:
-            # Create the prompt for OpenAI in the user's language
-            prompt = self.get_text('openai_prompt', context, product_name, product_name)
-            system_prompt = self.get_text('system_prompt', context)
-
-            # Generate response using OpenAI
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=300,
-                temperature=0.7
-            )
-
-            promo_text = response.choices[0].message.content.strip()
-            
-            # Store the generated text and product name for potential channel posting
-            context.user_data['last_generated_text'] = promo_text
-            context.user_data['last_product_name'] = product_name
-            
-            # Format the response
-            formatted_response = f"""
-{self.get_text('promo_result', context, product_name)}
-
-{promo_text}
-
----
-{self.get_text('promo_footer', context)}
-            """
-
-            await update.message.reply_text(
-                formatted_response, 
-                parse_mode='Markdown',
-                reply_markup=self.get_post_generation_keyboard(context)
-            )
-            
-            # Check for auto-posting
-            channel_info = context.user_data.get('channel_info', {})
-            if channel_info.get('auto_post', False) and channel_info.get('channel_id'):
-                # Auto post to channel
-                success, message = await self.post_to_channel_action(context, promo_text, product_name)
-                
-                # Notify user about auto-post result
-                status_emoji = "✅" if success else "❌"
-                auto_post_msg = f"\n\n{status_emoji} **Auto-post:** {message}"
-                
-                # Edit the previous message to include auto-post status
-                try:
-                    await update.message.edit_text(
-                        formatted_response + auto_post_msg,
-                        parse_mode='Markdown',
-                        reply_markup=self.get_post_generation_keyboard(context)
-                    )
-                except:
-                    # If editing fails, send a new message
-                    await update.message.reply_text(
-                        auto_post_msg,
-                        parse_mode='Markdown'
-                    )
-
-        except openai.error.RateLimitError:
-            await update.message.reply_text(
-                self.get_text('rate_limit', context),
-                reply_markup=self.get_main_menu_keyboard(context)
-            )
-        except openai.error.InvalidRequestError as e:
-            logger.error(f"Invalid request to OpenAI: {e}")
-            await update.message.reply_text(
-                self.get_text('request_error', context),
-                reply_markup=self.get_main_menu_keyboard(context)
-            )
-        except Exception as e:
-            logger.error(f"Error generating promo text: {e}")
-            await update.message.reply_text(
-                self.get_text('general_error', context),
-                reply_markup=self.get_main_menu_keyboard(context)
-            )
-
-    async def show_my_products(self, query, context):
-        """Show My Products menu."""
-        products = context.user_data.get('products', [])
-        
-        if not products:
-            text = "📦 **My Products**\n\nNo products added yet!\n\nAdd product links to start creating amazing promotional content. I can analyze any e-commerce link and extract product information automatically.\n\n**Supported:** Amazon, eBay, AliExpress, Shopify stores, and many more!"
-        else:
-            text = f"📦 **My Products ({len(products)}/5)**\n\nYour saved products:\n\n"
-            for i, product in enumerate(products, 1):
-                text += f"{i}. **{product['name']}**\n   💰 {product['price']} | 📂 {product['category']}\n\n"
-        
-        await query.edit_message_text(
-            text=text,
-            parse_mode='Markdown',
-            reply_markup=self.get_my_products_keyboard(context)
-        )
-
-    async def prompt_add_product(self, query, context):
-        """Prompt user to add a product link."""
-        products = context.user_data.get('products', [])
-        
-        if len(products) >= 5:
-            text = "📦 **Product Limit Reached**\n\nYou can only store 5 products at a time. Please delete some products first or clear all to add new ones.\n\nThis limit helps keep the bot fast and efficient! 🚀"
-        else:
-            context.user_data['waiting_for_product_link'] = True
-            text = f"🔗 **Add Product Link ({len(products)}/5)**\n\nSend me a product link from any online store!\n\n**Examples:**\n• Amazon: https://amazon.com/product-name\n• eBay: https://ebay.com/itm/product\n• AliExpress: https://aliexpress.com/item/product\n• Any e-commerce site with product pages\n\n**What I'll extract:**\n✅ Product name & price\n✅ Description & features\n✅ Brand & category\n✅ Product image\n\nJust paste the link below! 👇"
-        
-        await query.edit_message_text(
-            text=text,
-            parse_mode='Markdown',
-            reply_markup=self.get_back_to_menu_keyboard(context)
-        )
-
-    async def clear_all_products(self, query, context):
-        """Clear all products with confirmation."""
-        products = context.user_data.get('products', [])
-        
-        if not products:
-            text = "📦 **No Products to Clear**\n\nYou don't have any products saved yet."
-        else:
-            context.user_data['products'] = []
-            text = f"🗑️ **All Products Cleared**\n\nRemoved {len(products)} products from your list. You can now add new products!"
-        
-        await query.edit_message_text(
-            text=text,
-            parse_mode='Markdown',
-            reply_markup=self.get_my_products_keyboard(context)
-        )
-
-    async def show_product_detail(self, query, context, product_index):
-        """Show detailed information about a specific product."""
-        products = context.user_data.get('products', [])
-        
-        if product_index >= len(products):
-            await query.edit_message_text(
-                "❌ Product not found.",
-                reply_markup=self.get_my_products_keyboard(context)
-            )
-            return
-        
-        product = products[product_index]
-        
-        text = f"📦 **Product Details**\n\n"
-        text += f"**Name:** {product['name']}\n"
-        text += f"**Price:** {product['price']}\n"
-        text += f"**Brand:** {product['brand']}\n"
-        text += f"**Category:** {product['category']}\n"
-        text += f"**Features:** {product['features']}\n\n"
-        text += f"Ready to create promotional content for this product?"
-        
-        await query.edit_message_text(
-            text=text,
-            parse_mode='Markdown',
-            reply_markup=self.get_product_detail_keyboard(context, product_index)
-        )
-
-    async def delete_product(self, query, context, product_index):
-        """Delete a specific product."""
-        products = context.user_data.get('products', [])
-        
-        if product_index >= len(products):
-            await query.edit_message_text(
-                "❌ Product not found.",
-                reply_markup=self.get_my_products_keyboard(context)
-            )
-            return
-        
-        product_name = products[product_index]['name']
-        del products[product_index]
-        context.user_data['products'] = products
-        
-        text = f"🗑️ **Product Deleted**\n\n**{product_name}** has been removed from your products list."
-        
-        await query.edit_message_text(
-            text=text,
-            parse_mode='Markdown',
-            reply_markup=self.get_my_products_keyboard(context)
-        )
-
-    async def generate_product_promo(self, query, context, product_index):
-        """Generate promotional text for a specific product."""
-        products = context.user_data.get('products', [])
-        
-        if product_index >= len(products):
-            await query.edit_message_text(
-                "❌ Product not found.",
-                reply_markup=self.get_my_products_keyboard(context)
-            )
-            return
-        
-        product = products[product_index]
-        
-        # Show typing action
-        await context.bot.send_chat_action(chat_id=query.message.chat.id, action='typing')
-        
-        try:
-            # Create product-specific prompt
-            product_info = f"Product: {product['name']}\nPrice: {product['price']}\nBrand: {product['brand']}\nCategory: {product['category']}\nKey Features: {product['features']}"
-            
-            prompt = f"Create a compelling promotional post for this product:\n\n{product_info}\n\nThe promotional text should:\n- Be engaging and attention-grabbing\n- Highlight key benefits and features\n- Include a strong call-to-action\n- Be suitable for social media posting\n- Use emojis appropriately\n- Be between 50-150 words\n- Sound persuasive and professional\n- Include trending marketing language when appropriate"
-            
-            system_prompt = self.get_text('system_prompt', context)
-            
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=300,
-                temperature=0.7
-            )
-            
-            promo_text = response.choices[0].message.content.strip()
-            
-            # Store for channel posting
-            context.user_data['last_generated_text'] = promo_text
-            context.user_data['last_product_name'] = product['name']
-            
-            # Format response
-            text = f"🎯 **Promotional Text for: {product['name']}**\n\n{promo_text}\n\n---\n💡 *Feel free to customize this text for your specific needs!*"
-            
-            await query.edit_message_text(
-                text=text,
-                parse_mode='Markdown',
-                reply_markup=self.get_post_generation_keyboard(context)
-            )
-            
-            # Check for auto-posting
-            channel_info = context.user_data.get('channel_info', {})
-            if channel_info.get('auto_post', False) and channel_info.get('channel_id'):
-                success, message = await self.post_to_channel_action(context, promo_text, product['name'])
-                
-                status_emoji = "✅" if success else "❌"
-                auto_post_msg = f"\n\n{status_emoji} **Auto-post:** {message}"
-                
-                try:
-                    await query.edit_message_text(
-                        text + auto_post_msg,
-                        parse_mode='Markdown',
-                        reply_markup=self.get_post_generation_keyboard(context)
-                    )
-                except:
-                    pass
-        
-        except Exception as e:
-            logger.error(f"Error generating product promo: {e}")
-            await query.edit_message_text(
-                f"❌ Error generating promotional text: {str(e)}",
-                reply_markup=self.get_product_detail_keyboard(context, product_index)
-            )
-
-    async def handle_product_link(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle product link input from user."""
-        if not context.user_data.get('waiting_for_product_link'):
-            return False
-        
-        url = update.message.text.strip()
-        context.user_data['waiting_for_product_link'] = False
-        
-        # Validate URL
-        if not self.is_valid_url(url):
-            await update.message.reply_text(
-                "❌ **Invalid URL**\n\nPlease send a valid product link starting with http:// or https://",
-                parse_mode='Markdown',
-                reply_markup=self.get_my_products_keyboard(context)
-            )
-            return True
-        
-        # Show processing message
-        processing_msg = await update.message.reply_text(
-            "🔄 **Analyzing Product...**\n\nExtracting information from the link...",
-            parse_mode='Markdown'
-        )
-        
-        # Scrape product info
-        raw_data = await self.scrape_product_info(url)
-        
-        if isinstance(raw_data, tuple):  # Error occurred
-            await processing_msg.edit_text(
-                f"❌ **Extraction Failed**\n\n{raw_data[1]}\n\n**Suggestions:**\n• Try a different product link\n• Make sure the link is public\n• Check if the website allows automated access",
-                parse_mode='Markdown',
-                reply_markup=self.get_my_products_keyboard(context)
-            )
-            return True
-        
-        # Analyze with AI
-        await processing_msg.edit_text(
-            "🤖 **Analyzing with AI...**\n\nProcessing product information...",
-            parse_mode='Markdown'
-        )
-        
-        product_data = await self.analyze_product_with_ai(raw_data)
-        
-        # Store product
-        if 'products' not in context.user_data:
-            context.user_data['products'] = []
-        
-        context.user_data['products'].append(product_data)
-        
-        # Show success message
-        text = f"✅ **Product Added Successfully!**\n\n"
-        text += f"**Name:** {product_data['name']}\n"
-        text += f"**Price:** {product_data['price']}\n"
-        text += f"**Brand:** {product_data['brand']}\n"
-        text += f"**Category:** {product_data['category']}\n\n"
-        text += f"Product saved to your list ({len(context.user_data['products'])}/5)!"
-        
-        await processing_msg.edit_text(
-            text,
-            parse_mode='Markdown',
-            reply_markup=self.get_my_products_keyboard(context)
-        )
-        
-        return True
 
     def run(self):
         """Start the bot."""
