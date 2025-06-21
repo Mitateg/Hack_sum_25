@@ -153,7 +153,19 @@ TRANSLATIONS = {
         'edit_text_btn': '✏️ Edit Text',
         'cancel_btn': '❌ Cancel',
         'permissions_verified': 'Permissions verified successfully',
-        'back_to_channel_settings': '⬅️ Back to Channel Settings'
+        'back_to_channel_settings': '⬅️ Back to Channel Settings',
+        'confirm_edited_post_title': '📤 **Confirm Edited Post**',
+        'posted_successfully': 'Posted successfully to {}',
+        'failed_to_post': 'Failed to post: {}',
+        'translate_btn': '🌍 Translate',
+        'no_channel_configured': 'No channel configured',
+        'translate_to_title': '🌍 **Translate Text**',
+        'translate_to_subtitle': 'Choose target language:',
+        'translate_to_english': '🇺🇸 English',
+        'translate_to_russian': '🇷🇺 Russian',
+        'translate_to_romanian': '🇷🇴 Romanian',
+        'edit_generated_title': '✏️ **Edit Generated Text**',
+        'edit_generated_instructions': 'Send me your edited version of the promotional text:'
     },
     'ru': {
         'welcome_title': '🚀 **Добро пожаловать в бот генератора рекламных текстов!** 🚀',
@@ -215,7 +227,7 @@ TRANSLATIONS = {
         'openai_prompt': 'Создай убедительный рекламный пост для следующего товара: {}\n\nРекламный текст должен:\n- Быть привлекательным и захватывающим внимание\n- Подчеркивать ключевые преимущества и особенности\n- Включать сильный призыв к действию\n- Подходить для публикации в социальных сетях\n- Уместно использовать эмодзи\n- Быть длиной 50-150 слов\n- Звучать убедительно и профессионально\n- БЫТЬ НАПИСАННЫМ НА РУССКОМ ЯЗЫКЕ\n\nТовар: {}',
         'system_prompt': 'Ты профессиональный маркетинговый копирайтер, специализирующийся на создании убедительного рекламного контента для товаров. Твой стиль письма привлекательный, убедительный и современный. Пиши на русском языке.',
         'add_channel_title': '📢 **Добавить канал/группу**',
-        'add_channel_instructions': 'Пожалуйста, отправьте мне имя канала/группы (с @) или ID.\n\n**Пример:** @mychannel\n\n**Примечание:** Бот должен быть добавлен как администратор в канал/группу с правами публикации сообщений.',
+        'add_channel_instructions': 'Пожалуйста, отправьте мне имя канала/группы (с @) или ID-ул.\n\n**Пример:** @mychannel\n\n**Примечание:** Бот должен быть добавлен как администратор в канал/группу с правами публикации сообщений.',
         'channel_removed_title': '✅ **Канал удален**',
         'channel_removed_message': 'Конфигурация канала была удалена. Вы можете добавить новый канал в любое время из настроек.',
         'autopost_enabled_title': '🤖 **Авто-публикация включена**',
@@ -256,7 +268,18 @@ TRANSLATIONS = {
         'extraction_failed': '❌ **Извлечение не удалось**\n\n{}\n\n**Предложения:**\n• Попробуйте другую ссылку на товар\n• Убедитесь, что ссылка публичная\n• Проверьте, разрешает ли сайт автоматический доступ',
         'product_added_title': '✅ **Товар успешно добавлен!**',
         'product_added_message': 'Товар сохранен в ваш список ({}/5)!',
-        'confirm_edited_post_title': '📤 **Подтвердить отредактированный пост**'
+        'confirm_edited_post_title': '📤 **Подтвердить отредактированный пост**',
+        'posted_successfully': 'Успешно опубликовано в {}',
+        'failed_to_post': 'Не удалось опубликовать: {}',
+        'translate_btn': '🌍 Перевести',
+        'no_channel_configured': 'Канал не настроен',
+        'translate_to_title': '🌍 **Перевести текст**',
+        'translate_to_subtitle': 'Выберите язык для перевода:',
+        'translate_to_english': '🇺🇸 Английский',
+        'translate_to_russian': '🇷🇺 Русский',
+        'translate_to_romanian': '🇷🇴 Румынский',
+        'edit_generated_title': '✏️ **Редактировать сгенерированный текст**',
+        'edit_generated_instructions': 'Отправьте мне отредактированную версию рекламного текста:'
     },
     'ro': {
         'welcome_title': '🚀 **Bun venit la botul generator de texte promoționale!** 🚀',
@@ -359,7 +382,18 @@ TRANSLATIONS = {
         'extraction_failed': '❌ **Extragerea a eșuat**\n\n{}\n\n**Sugestii:**\n• Încearcă un alt link de produs\n• Asigură-te că link-ul este public\n• Verifică dacă site-ul permite accesul automatizat',
         'product_added_title': '✅ **Produs adăugat cu succes!**',
         'product_added_message': 'Produsul a fost salvat în lista ta ({}/5)!',
-        'confirm_edited_post_title': '📤 **Confirmă postarea editată**'
+        'confirm_edited_post_title': '📤 **Confirmă postarea editată**',
+        'posted_successfully': 'Postat cu succes în {}',
+        'failed_to_post': 'Postarea a eșuat: {}',
+        'translate_btn': '🌍 Traduce',
+        'no_channel_configured': 'Niciun canal configurat',
+        'translate_to_title': '🌍 **Traduce textul**',
+        'translate_to_subtitle': 'Alege limba țintă:',
+        'translate_to_english': '🇺🇸 Engleză',
+        'translate_to_russian': '🇷🇺 Rusă',
+        'translate_to_romanian': '🇷🇴 Română',
+        'edit_generated_title': '✏️ **Editează textul generat**',
+        'edit_generated_instructions': 'Trimite-mi versiunea editată a textului promoțional:'
     }
 }
 
@@ -443,11 +477,15 @@ class PromoBot:
             keyboard = [
                 [InlineKeyboardButton(self.get_text('generate_another_btn', context), callback_data='generate_promo'),
                  InlineKeyboardButton(self.get_text('post_to_channel_btn', context), callback_data='post_to_channel')],
+                [InlineKeyboardButton(self.get_text('translate_btn', context), callback_data='translate_text'),
+                 InlineKeyboardButton(self.get_text('edit_text_btn', context), callback_data='edit_generated_text')],
                 [InlineKeyboardButton(self.get_text('main_menu_btn', context), callback_data='main_menu')]
             ]
         else:
             keyboard = [
                 [InlineKeyboardButton(self.get_text('generate_another_btn', context), callback_data='generate_promo'),
+                 InlineKeyboardButton(self.get_text('translate_btn', context), callback_data='translate_text')],
+                [InlineKeyboardButton(self.get_text('edit_text_btn', context), callback_data='edit_generated_text'),
                  InlineKeyboardButton(self.get_text('main_menu_btn', context), callback_data='main_menu')]
             ]
         return InlineKeyboardMarkup(keyboard)
@@ -502,7 +540,7 @@ class PromoBot:
         # Add general marketing hashtags
         hashtags.extend(["#promo", "#sale", "#newproduct", "#shopping"])
         
-        return " ".join(hashtags[:8])  # Limit to 8 hashtags
+        return " ".join(hashtags[:6])  # Limit to 6 hashtags
 
     async def post_to_channel_action(self, context, text, product_name):
         """Post the promotional text to configured channel."""
@@ -510,14 +548,19 @@ class PromoBot:
         channel_id = channel_info.get('channel_id')
         
         if not channel_id:
-            return False, "No channel configured"
+            return False, self.get_text('no_channel_configured', context)
         
         try:
-            # Generate hashtags
-            hashtags = self.generate_hashtags(product_name, context)
+            # Check if text already contains hashtags
+            has_hashtags = '#' in text
             
-            # Format final post
-            final_post = f"{text}\n\n{hashtags}"
+            if has_hashtags:
+                # Text already has hashtags, post as is
+                final_post = text
+            else:
+                # Generate hashtags (limited to 5-6) only if text doesn't have them
+                hashtags = self.generate_hashtags(product_name, context)
+                final_post = f"{text}\n\n{hashtags}"
             
             # Post to channel
             sent_message = await context.bot.send_message(f"@{channel_id}", final_post)
@@ -533,7 +576,7 @@ class PromoBot:
                 'status': 'success'
             })
             
-            return True, f"Posted successfully to {channel_id}"
+            return True, self.get_text('posted_successfully', context, channel_id)
             
         except Exception as e:
             # Store failed post
@@ -547,7 +590,7 @@ class PromoBot:
                 'status': f'failed: {str(e)}'
             })
             
-            return False, f"Failed to post: {str(e)}"
+            return False, self.get_text('failed_to_post', context, str(e))
 
     def is_valid_url(self, url):
         """Check if URL is valid."""
@@ -917,6 +960,10 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
             await self.edit_post_text(query, context)
         elif query.data == 'cancel_post':
             await self.cancel_post(query, context)        # Product management callbacks
+        elif query.data == 'translate_text':
+            await self.translate_generated_text(query, context)
+        elif query.data == 'edit_generated_text':
+            await self.edit_generated_text(query, context)
         elif query.data == 'my_products':
             await self.show_my_products(query, context)
         elif query.data == 'add_product':
@@ -939,6 +986,9 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         elif query.data.startswith('select_product_'):
             product_index = int(query.data.split('_')[2])
             await self.generate_product_promo(query, context, product_index)
+        elif query.data.startswith('translate_'):
+            target_lang = query.data.split('_')[1]
+            await self.perform_translation(query, context, target_lang)
 
     async def show_generate_promo(self, query, context):
         """Show the promo generation choice menu."""
@@ -994,6 +1044,10 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         
         # Handle post editing
         if await self.handle_post_edit(update, context):
+            return
+            
+        # Handle generated text editing
+        if await self.handle_generated_text_edit(update, context):
             return
             
         # Handle product link input
@@ -1229,7 +1283,8 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
             # Create product-specific prompt
             product_info = f"Product: {product['name']}\nPrice: {product['price']}\nBrand: {product['brand']}\nCategory: {product['category']}\nKey Features: {product['features']}"
             
-            prompt = f"Create a compelling promotional post for this product:\n\n{product_info}\n\nThe promotional text should:\n- Be engaging and attention-grabbing\n- Highlight key benefits and features\n- Include a strong call-to-action\n- Be suitable for social media posting\n- Use emojis appropriately\n- Be between 50-150 words\n- Sound persuasive and professional\n- Include trending marketing language when appropriate"
+            # Use the translated prompt with product info
+            prompt = self.get_text('openai_prompt', context, product_info, product_info)
             
             system_prompt = self.get_text('system_prompt', context)
             
@@ -1250,10 +1305,17 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
             context.user_data['last_product_name'] = product['name']
             
             # Format response
-            text = f"🎯 **Promotional Text for: {product['name']}**\n\n{promo_text}\n\n---\n💡 *Feel free to customize this text for your specific needs!*"
+            formatted_response = f"""
+{self.get_text('promo_result', context, product['name'])}
+
+{promo_text}
+
+---
+{self.get_text('promo_footer', context)}
+            """
             
             await query.edit_message_text(
-                text=text,
+                text=formatted_response,
                 parse_mode='Markdown',
                 reply_markup=self.get_post_generation_keyboard(context)
             )
@@ -1268,7 +1330,7 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
                 
                 try:
                     await query.edit_message_text(
-                        text + auto_post_msg,
+                        formatted_response + auto_post_msg,
                         parse_mode='Markdown',
                         reply_markup=self.get_post_generation_keyboard(context)
                     )
@@ -1571,8 +1633,13 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
             'product': product_name
         }
         
-        hashtags = self.generate_hashtags(product_name, context)
-        preview_text = f"{stored_text}\n\n{hashtags}"
+        # Check if text already has hashtags for preview
+        has_hashtags = '#' in stored_text
+        if has_hashtags:
+            preview_text = stored_text
+        else:
+            hashtags = self.generate_hashtags(product_name, context)
+            preview_text = f"{stored_text}\n\n{hashtags}"
         
         text = f"{self.get_text('confirm_post_title', context)}\n\n{self.get_text('confirm_post_message', context, channel_id, product_name, preview_text[:200] + ('...' if len(preview_text) > 200 else ''))}"
         
@@ -1668,8 +1735,13 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
         channel_info = context.user_data.get('channel_info', {})
         channel_id = channel_info.get('channel_id', 'Unknown')
         
-        hashtags = self.generate_hashtags(pending_post['product'], context)
-        preview_text = f"{pending_post['text']}\n\n{hashtags}"
+        # Check if text already has hashtags for preview
+        has_hashtags = '#' in pending_post['text']
+        if has_hashtags:
+            preview_text = pending_post['text']
+        else:
+            hashtags = self.generate_hashtags(pending_post['product'], context)
+            preview_text = f"{pending_post['text']}\n\n{hashtags}"
         
         text = f"{self.get_text('confirm_edited_post_title', context)}\n\nChannel: @{channel_id}\nProduct: {pending_post['product']}\n\n**Preview:**\n{preview_text[:200]}{'...' if len(preview_text) > 200 else ''}"
         
@@ -1678,6 +1750,145 @@ Format: NAME|CATEGORY|FEATURES|PRICE"""
             parse_mode='Markdown',
             reply_markup=self.get_post_confirmation_keyboard(context)
         )
+
+    async def translate_generated_text(self, query, context):
+        """Show language options for translating the generated text."""
+        stored_text = context.user_data.get('last_generated_text', '')
+        
+        if not stored_text:
+            await query.edit_message_text(
+                self.get_text('no_promo_text', context),
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+            return
+        
+        # Create translation keyboard
+        keyboard = [
+            [InlineKeyboardButton(self.get_text('translate_to_english', context), callback_data='translate_en'),
+             InlineKeyboardButton(self.get_text('translate_to_russian', context), callback_data='translate_ru')],
+            [InlineKeyboardButton(self.get_text('translate_to_romanian', context), callback_data='translate_ro')],
+            [InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]
+        ]
+        
+        text = f"{self.get_text('translate_to_title', context)}\n\n{self.get_text('translate_to_subtitle', context)}"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+    async def edit_generated_text(self, query, context):
+        """Allow user to edit the generated text."""
+        stored_text = context.user_data.get('last_generated_text', '')
+        
+        if not stored_text:
+            await query.edit_message_text(
+                self.get_text('no_promo_text', context),
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+            return
+        
+        context.user_data['editing_generated_text'] = True
+        text = f"{self.get_text('edit_generated_title', context)}\n\n{self.get_text('edit_generated_instructions', context)}\n\n**Current text:**\n{stored_text}"
+        
+        await query.edit_message_text(
+            text=text,
+            parse_mode='Markdown',
+            reply_markup=self.get_back_to_menu_keyboard(context)
+        )
+
+    async def perform_translation(self, query, context, target_lang):
+        """Translate the generated text to the target language."""
+        stored_text = context.user_data.get('last_generated_text', '')
+        product_name = context.user_data.get('last_product_name', '')
+        
+        if not stored_text:
+            await query.edit_message_text(
+                self.get_text('no_promo_text', context),
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+            return
+        
+        # Show typing action
+        await context.bot.send_chat_action(chat_id=query.message.chat.id, action='typing')
+        
+        try:
+            # Create translation prompt
+            lang_names = {'en': 'English', 'ru': 'Russian', 'ro': 'Romanian'}
+            target_language = lang_names.get(target_lang, 'English')
+            
+            translation_prompt = f"Translate the following promotional text to {target_language}. Keep the same tone, style, and marketing appeal. Maintain any emojis and formatting:\n\n{stored_text}"
+            
+            # Generate translation using OpenAI
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": f"You are a professional translator specializing in marketing content. Translate accurately while maintaining the promotional tone and appeal."},
+                    {"role": "user", "content": translation_prompt}
+                ],
+                max_tokens=300,
+                temperature=0.3
+            )
+
+            translated_text = response.choices[0].message.content.strip()
+            
+            # Store the translated text
+            context.user_data['last_generated_text'] = translated_text
+            
+            # Format the response
+            formatted_response = f"""
+🌍 **Translated to {target_language}**
+
+{self.get_text('promo_result', context, product_name)}
+
+{translated_text}
+
+---
+{self.get_text('promo_footer', context)}
+            """
+
+            await query.edit_message_text(
+                formatted_response, 
+                parse_mode='Markdown',
+                reply_markup=self.get_post_generation_keyboard(context)
+            )
+            
+        except Exception as e:
+            logger.error(f"Error translating text: {e}")
+            await query.edit_message_text(
+                self.get_text('general_error', context),
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+
+    async def handle_generated_text_edit(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle editing of generated promotional text."""
+        if not context.user_data.get('editing_generated_text'):
+            return False
+        
+        edited_text = update.message.text.strip()
+        context.user_data['editing_generated_text'] = False
+        
+        # Update the stored generated text
+        context.user_data['last_generated_text'] = edited_text
+        product_name = context.user_data.get('last_product_name', '')
+        
+        # Format the response
+        formatted_response = f"""
+{self.get_text('promo_result', context, product_name)}
+
+{edited_text}
+
+---
+{self.get_text('promo_footer', context)}
+        """
+
+        await update.message.reply_text(
+            formatted_response, 
+            parse_mode='Markdown',
+            reply_markup=self.get_post_generation_keyboard(context)
+        )
+        return True
 
     def run(self):
         """Start the bot."""
