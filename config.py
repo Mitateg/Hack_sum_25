@@ -20,6 +20,10 @@ class Config:
         self.rate_limit_requests = int(os.getenv('RATE_LIMIT_REQUESTS', '10'))
         self.rate_limit_window = int(os.getenv('RATE_LIMIT_WINDOW', '60'))
         
+        # Mastodon configuration (optional)
+        self.mastodon_instance = os.getenv('MASTODON_INSTANCE', '')
+        self.mastodon_access_token = os.getenv('MASTODON_ACCESS_TOKEN', '')
+        
         # Security settings
         self.web_dashboard_enabled = os.getenv('WEB_DASHBOARD_ENABLED', 'true').lower() == 'true'
         self.debug_mode = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
@@ -47,8 +51,16 @@ class Config:
         if not 1024 <= self.web_dashboard_port <= 65535:
             raise ValueError("Web dashboard port must be between 1024-65535")
         
+        # Validate Mastodon configuration if provided
+        if self.mastodon_instance and not self.mastodon_instance.startswith(('http://', 'https://')):
+            raise ValueError("Mastodon instance must include protocol (http:// or https://)")
+        
         # Create data directory if it doesn't exist
         os.makedirs(self.data_directory, exist_ok=True)
+    
+    def has_mastodon_config(self) -> bool:
+        """Check if Mastodon is properly configured."""
+        return bool(self.mastodon_instance and self.mastodon_access_token)
     
     def get_log_config(self) -> dict:
         """Get logging configuration."""

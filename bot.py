@@ -15,7 +15,7 @@ from datetime import datetime
 from config import config
 from translations import get_text
 from storage import storage
-from utils import rate_limit, sanitize_input, scraper, advanced_sanitize_input, validate_url_security, generate_secure_hashtags
+from utils import rate_limit, sanitize_input, scraper, advanced_sanitize_input, validate_url_security, generate_secure_hashtags, create_mastodon_poster
 
 # Configure OpenAI
 openai.api_key = config.openai_api_key
@@ -27,6 +27,21 @@ class PromoBot:
     
     def __init__(self):
         self.application = Application.builder().token(config.telegram_token).build()
+        
+        # Initialize Mastodon poster if configured
+        self.mastodon_poster = None
+        if config.has_mastodon_config():
+            self.mastodon_poster = create_mastodon_poster(
+                config.mastodon_instance, 
+                config.mastodon_access_token
+            )
+            if self.mastodon_poster:
+                logger.info("Mastodon integration enabled")
+            else:
+                logger.warning("Mastodon configuration provided but connection failed")
+        else:
+            logger.info("Mastodon integration not configured")
+        
         self._setup_handlers()
     
     def _setup_handlers(self):
@@ -164,22 +179,39 @@ class PromoBot:
         """Create keyboard for after text generation with channel posting option."""
         channel_info = context.user_data.get('channel_info', {})
         has_channel = bool(channel_info.get('channel_id'))
+        has_mastodon = bool(self.mastodon_poster)
+        
+        keyboard = []
+        
+        # First row: Generate another and main posting options
+        row1 = [InlineKeyboardButton(self.get_text('generate_another_btn', context), callback_data='generate_promo')]
         
         if has_channel:
-            keyboard = [
-                [InlineKeyboardButton(self.get_text('generate_another_btn', context), callback_data='generate_promo'),
-                 InlineKeyboardButton(self.get_text('post_to_channel_btn', context), callback_data='post_to_channel')],
-                [InlineKeyboardButton(self.get_text('translate_btn', context), callback_data='translate_text'),
-                 InlineKeyboardButton(self.get_text('edit_text_btn', context), callback_data='edit_generated_text')],
-                [InlineKeyboardButton(self.get_text('main_menu_btn', context), callback_data='main_menu')]
-            ]
-        else:
-            keyboard = [
-                [InlineKeyboardButton(self.get_text('generate_another_btn', context), callback_data='generate_promo'),
-                 InlineKeyboardButton(self.get_text('translate_btn', context), callback_data='translate_text')],
-                [InlineKeyboardButton(self.get_text('edit_text_btn', context), callback_data='edit_generated_text'),
-                 InlineKeyboardButton(self.get_text('main_menu_btn', context), callback_data='main_menu')]
-            ]
+            row1.append(InlineKeyboardButton(self.get_text('post_to_channel_btn', context), callback_data='post_to_channel'))
+        
+        keyboard.append(row1)
+        
+        # Second row: Additional posting and editing options
+        row2 = []
+        if has_mastodon:
+            row2.append(InlineKeyboardButton(self.get_text('post_to_mastodon_btn', context), callback_data='post_to_mastodon'))
+        
+        row2.append(InlineKeyboardButton(self.get_text('translate_btn', context), callback_data='translate_text'))
+        
+        if len(row2) == 1:  # If only one button, add edit button to same row
+            row2.append(InlineKeyboardButton(self.get_text('edit_text_btn', context), callback_data='edit_generated_text'))
+        
+        keyboard.append(row2)
+        
+        # Third row: Edit button if not added above, and main menu
+        row3 = []
+        if len(row2) == 2 and has_mastodon:  # Edit button not added yet
+            row3.append(InlineKeyboardButton(self.get_text('edit_text_btn', context), callback_data='edit_generated_text'))
+        
+        row3.append(InlineKeyboardButton(self.get_text('main_menu_btn', context), callback_data='main_menu'))
+        
+        keyboard.append(row3)
+        
         return InlineKeyboardMarkup(keyboard)
 
     def get_post_confirmation_keyboard(self, context):
@@ -385,8 +417,12 @@ class PromoBot:
                 await self.confirm_clear_post_history(query, context)
             elif callback_data == 'post_to_channel':
                 await self.initiate_channel_post(query, context)
+            elif callback_data == 'post_to_mastodon':
+                await self.initiate_mastodon_post(query, context)
             elif callback_data == 'confirm_post':
                 await self.confirm_channel_post(query, context)
+            elif callback_data == 'confirm_mastodon_post':
+                await self.confirm_mastodon_post(query, context)
             elif callback_data == 'edit_post':
                 await self.edit_post_text(query, context)
             elif callback_data == 'cancel_post':
@@ -1430,8 +1466,9 @@ class PromoBot:
         )
 
     async def cancel_post(self, query, context):
-        """Cancel the post."""
-        context.user_data.pop('pending_post_text', None)
+        """Cancel the pending post."""
+        if 'pending_post_text' in context.user_data:
+            del context.user_data['pending_post_text']
         
         await query.edit_message_text(
             f"{self.get_text('post_cancelled_title', context)}\n\n{self.get_text('post_cancelled_message', context)}",
@@ -1664,6 +1701,107 @@ class PromoBot:
                 "An error occurred while editing the text. Please try again.",
                 reply_markup=self.get_back_to_menu_keyboard(context)
             )
+
+    async def initiate_mastodon_post(self, query, context):
+        """Initiate posting to Mastodon."""
+        if not self.mastodon_poster:
+            await query.edit_message_text(
+                self.get_text('mastodon_not_configured', context),
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+            return
+        
+        promo_text = context.user_data.get('last_generated_text')
+        product_name = context.user_data.get('last_product_name', 'Unknown')
+        
+        if not promo_text:
+            await query.edit_message_text(
+                self.get_text('no_promo_text', context),
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+            return
+        
+        # Show preview with hashtags
+        hashtags = self.generate_hashtags(product_name, context)
+        preview_text = promo_text
+        if '#' not in promo_text:
+            preview_text = f"{promo_text}\n\n{hashtags}"
+        
+        # Store pending post
+        context.user_data['pending_mastodon_post'] = promo_text
+        
+        confirmation_text = f"{self.get_text('confirm_mastodon_post_title', context)}\n\n"
+        confirmation_text += f"{self.get_text('confirm_mastodon_message', context, config.mastodon_instance, product_name, preview_text[:200] + ('...' if len(preview_text) > 200 else ''))}"
+        
+        # Create Mastodon-specific confirmation keyboard
+        keyboard = [
+            [InlineKeyboardButton(self.get_text('post_now_btn', context), callback_data='confirm_mastodon_post'),
+             InlineKeyboardButton(self.get_text('edit_text_btn', context), callback_data='edit_post')],
+            [InlineKeyboardButton(self.get_text('cancel_btn', context), callback_data='cancel_post')]
+        ]
+        
+        await query.edit_message_text(
+            confirmation_text,
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+    async def confirm_mastodon_post(self, query, context):
+        """Confirm and execute Mastodon post."""
+        if not self.mastodon_poster:
+            await query.edit_message_text(
+                self.get_text('mastodon_not_configured', context),
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+            return
+        
+        promo_text = context.user_data.get('pending_mastodon_post') or context.user_data.get('last_generated_text')
+        product_name = context.user_data.get('last_product_name', 'Unknown')
+        
+        if not promo_text:
+            await query.edit_message_text(
+                self.get_text('no_pending_post', context),
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+            return
+        
+        # Prepare final text with hashtags if needed
+        final_text = promo_text
+        if '#' not in promo_text:
+            hashtags = self.generate_hashtags(product_name, context)
+            final_text = f"{promo_text}\n\n{hashtags}"
+        
+        # Post to Mastodon
+        success, message = await self.mastodon_poster.post_status(final_text)
+        
+        # Store post history
+        if 'mastodon_post_history' not in context.user_data:
+            context.user_data['mastodon_post_history'] = []
+        
+        context.user_data['mastodon_post_history'].append({
+            'product': product_name,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'status': 'success' if success else 'failed',
+            'message': message,
+            'text_length': len(final_text)
+        })
+        
+        # Save user data
+        user_id = query.from_user.id
+        storage.save_user_data(user_id, context.user_data)
+        
+        # Show result
+        if success:
+            title = self.get_text('mastodon_post_successful', context)
+        else:
+            title = self.get_text('mastodon_post_failed', context)
+        
+        await query.edit_message_text(
+            f"{title}\n\n{message}",
+            reply_markup=self.get_back_to_menu_keyboard(context)
+        )
+        
+        # Clear pending post
+        context.user_data.pop('pending_mastodon_post', None)
 
     def run(self):
         """Run the bot."""

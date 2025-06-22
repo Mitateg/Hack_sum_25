@@ -536,26 +536,216 @@ class SecureWebScraper:
         return "Unknown brand"
 
 def generate_secure_hashtags(product_name: str, max_hashtags: int = 6) -> str:
-    """Generate hashtags with enhanced security validation."""
-    if not isinstance(product_name, str):
+    """
+    Generate secure hashtags from product name with validation.
+    
+    Args:
+        product_name: Product name to generate hashtags from
+        max_hashtags: Maximum number of hashtags to generate
+        
+    Returns:
+        String of hashtags separated by spaces
+    """
+    if not isinstance(product_name, str) or not product_name.strip():
         return ""
     
     # Sanitize input
-    product_name = advanced_sanitize_input(product_name, 200)
+    product_name = advanced_sanitize_input(product_name, max_length=200)
     
-    if not product_name:
-        return ""
+    # Extract words and clean them
+    words = re.findall(r'\b\w+\b', product_name.lower())
     
-    # Extract meaningful words
-    words = re.findall(r'\b[a-zA-Z]{3,}\b', product_name)
+    # Filter words (minimum 3 characters, exclude common words)
+    common_words = {'the', 'and', 'for', 'with', 'from', 'this', 'that', 'are', 'was', 'were'}
+    valid_words = [word for word in words if len(word) >= 3 and word not in common_words]
     
+    # Create hashtags
     hashtags = []
-    for word in words[:max_hashtags]:
-        # Additional validation for hashtag content
-        if re.match(r'^[a-zA-Z0-9_]+$', word) and len(word) >= 3:
-            hashtags.append(f"#{word.capitalize()}")
+    for word in valid_words[:max_hashtags-2]:  # Reserve space for generic hashtags
+        # Additional validation for hashtag
+        if re.match(r'^[a-zA-Z0-9_]+$', word):
+            hashtags.append(f"#{word}")
     
-    return " ".join(hashtags)
+    # Add generic marketing hashtags
+    generic_hashtags = ["#promo", "#sale", "#newproduct", "#shopping", "#deal", "#offer"]
+    hashtags.extend(generic_hashtags[:max_hashtags-len(hashtags)])
+    
+    return " ".join(hashtags[:max_hashtags])
+
+class MastodonPoster:
+    """Secure Mastodon posting functionality."""
+    
+    def __init__(self, instance_url: str, access_token: str):
+        """
+        Initialize Mastodon poster.
+        
+        Args:
+            instance_url: Mastodon instance URL (e.g., https://mastodon.social)
+            access_token: User access token for posting
+        """
+        self.instance_url = instance_url.rstrip('/')
+        self.access_token = access_token
+        self.session = requests.Session()
+        self.session.headers.update({
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        })
+    
+    def _validate_status_text(self, text: str) -> str:
+        """
+        Validate and prepare status text for posting.
+        
+        Args:
+            text: Status text to validate
+            
+        Returns:
+            Validated and truncated text
+        """
+        if not isinstance(text, str):
+            raise ValueError("Status text must be a string")
+        
+        # Sanitize input
+        text = advanced_sanitize_input(text, max_length=500, allow_html=False)
+        
+        # Mastodon character limit is typically 500
+        if len(text) > 500:
+            text = text[:497] + "..."
+        
+        if not text.strip():
+            raise ValueError("Status text cannot be empty")
+        
+        return text
+    
+    @rate_limit(max_calls=5, window=300, action="mastodon_posting")  # 5 posts per 5 minutes
+    async def post_status(self, status_text: str, visibility: str = "public") -> Tuple[bool, str]:
+        """
+        Post a status to Mastodon.
+        
+        Args:
+            status_text: Text to post
+            visibility: Post visibility (public, unlisted, private, direct)
+            
+        Returns:
+            Tuple of (success, message)
+        """
+        try:
+            # Validate inputs
+            validated_text = self._validate_status_text(status_text)
+            
+            if visibility not in ["public", "unlisted", "private", "direct"]:
+                visibility = "public"
+            
+            # Prepare API request
+            api_url = f"{self.instance_url}/api/v1/statuses"
+            data = {
+                "status": validated_text,
+                "visibility": visibility
+            }
+            
+            # Make request with timeout
+            response = self.session.post(api_url, json=data, timeout=30)
+            response.raise_for_status()
+            
+            # Parse response
+            result = response.json()
+            post_url = result.get('url', 'Unknown')
+            
+            logger.info(f"Successfully posted to Mastodon: {post_url}")
+            return True, f"✅ Posted successfully to Mastodon!\n🔗 {post_url}"
+            
+        except requests.exceptions.HTTPError as e:
+            error_msg = f"HTTP Error {e.response.status_code}"
+            try:
+                error_details = e.response.json()
+                if 'error' in error_details:
+                    error_msg += f": {error_details['error']}"
+            except:
+                error_msg += f": {e.response.text[:100]}"
+            
+            logger.error(f"Mastodon HTTP error: {error_msg}")
+            return False, f"❌ Failed to post to Mastodon: {error_msg}"
+            
+        except requests.exceptions.Timeout:
+            logger.error("Mastodon request timeout")
+            return False, "❌ Request timeout. Please try again later."
+            
+        except requests.exceptions.ConnectionError:
+            logger.error("Mastodon connection error")
+            return False, "❌ Connection error. Please check your internet connection."
+            
+        except ValueError as e:
+            logger.error(f"Mastodon validation error: {e}")
+            return False, f"❌ Validation error: {str(e)}"
+            
+        except Exception as e:
+            logger.error(f"Unexpected Mastodon error: {e}")
+            return False, f"❌ Unexpected error: {str(e)}"
+    
+    def test_connection(self) -> Tuple[bool, str]:
+        """
+        Test connection to Mastodon instance.
+        
+        Returns:
+            Tuple of (success, message)
+        """
+        try:
+            # Test with account verification endpoint
+            api_url = f"{self.instance_url}/api/v1/accounts/verify_credentials"
+            response = self.session.get(api_url, timeout=10)
+            response.raise_for_status()
+            
+            account_info = response.json()
+            username = account_info.get('username', 'Unknown')
+            
+            return True, f"✅ Connected to Mastodon as @{username}"
+            
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 401:
+                return False, "❌ Invalid access token"
+            else:
+                return False, f"❌ HTTP Error: {e.response.status_code}"
+                
+        except requests.exceptions.ConnectionError:
+            return False, "❌ Cannot connect to Mastodon instance"
+            
+        except Exception as e:
+            return False, f"❌ Connection test failed: {str(e)}"
+
+def create_mastodon_poster(instance_url: str, access_token: str) -> Optional[MastodonPoster]:
+    """
+    Create and validate Mastodon poster instance.
+    
+    Args:
+        instance_url: Mastodon instance URL
+        access_token: Access token
+        
+    Returns:
+        MastodonPoster instance or None if invalid
+    """
+    try:
+        if not instance_url or not access_token:
+            return None
+        
+        # Validate URL
+        is_valid, error = validate_url_security(instance_url)
+        if not is_valid:
+            logger.error(f"Invalid Mastodon instance URL: {error}")
+            return None
+        
+        poster = MastodonPoster(instance_url, access_token)
+        
+        # Test connection
+        success, message = poster.test_connection()
+        if success:
+            logger.info(f"Mastodon poster created successfully: {message}")
+            return poster
+        else:
+            logger.error(f"Mastodon connection test failed: {message}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Failed to create Mastodon poster: {e}")
+        return None
 
 # Global secure scraper instance
 scraper = SecureWebScraper()
