@@ -1,0 +1,157 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Python cache and build files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment files (security)
+.env
+.env.local
+.env.production
+.env.test
+config.env
+
+# Log files
+*.log
+logs/
+data/logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Documentation and README files
+README.md
+docs/
+*.md
+
+# Test files
+tests/
+test_*
+*_test.py
+pytest.ini
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+
+# Development tools
+.flake8
+.black
+.isort.cfg
+setup.cfg
+tox.ini
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Docker files (to avoid recursion)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Backup files
+*.bak
+*.backup
+data/backups/
+
+# Large files that shouldn't be in container
+*.zip
+*.tar.gz
+*.tar.bz2
+*.rar
+
+# Local development files
+local_*
+dev_*
+debug_*
+
+# Node.js (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database files (should be in volumes)
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache directories
+.cache/
+.npm/
+.yarn/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# Spyder
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json 

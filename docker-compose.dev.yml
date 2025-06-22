@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  telegram-bot-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: telegram-promo-bot-dev
+    restart: unless-stopped
+    
+    # Development environment variables
+    environment:
+      - TELEGRAM_BOT_ENV=development
+      - PYTHONUNBUFFERED=1
+      - ENABLE_DASHBOARD=true
+      - DEBUG=true
+    
+    # Load environment variables from .env file
+    env_file:
+      - .env
+    
+    # Volumes for development (including source code)
+    volumes:
+      - .:/app  # Mount source code for live reloading
+      - dev-data:/app/data
+      - dev-logs:/app/data/logs
+    
+    # Port mapping
+    ports:
+      - "5000:5000"  # Web dashboard
+      - "8000:8000"  # Additional debug port
+    
+    # Override command for development
+    command: ["python", "main.py"]
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Development logging (more verbose)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    
+    # Network
+    networks:
+      - bot-dev-network
+    
+    # Development-specific settings
+    stdin_open: true
+    tty: true
+
+  # Redis for development/testing
+  redis-dev:
+    image: redis:7-alpine
+    container_name: telegram-bot-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-dev-data:/data
+    networks:
+      - bot-dev-network
+    command: redis-server --appendonly yes
+
+  # Database for development (if needed)
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: telegram-bot-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: telegram_bot_dev
+      POSTGRES_USER: bot_user
+      POSTGRES_PASSWORD: dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    networks:
+      - bot-dev-network
+
+  # Monitoring stack for development
+  prometheus-dev:
+    image: prom/prometheus:latest
+    container_name: telegram-bot-prometheus-dev
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.dev.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-dev-data:/prometheus
+    networks:
+      - bot-dev-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+
+  grafana-dev:
+    image: grafana/grafana:latest
+    container_name: telegram-bot-grafana-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-dev-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - bot-dev-network
+    depends_on:
+      - prometheus-dev
+
+volumes:
+  dev-data:
+    driver: local
+  dev-logs:
+    driver: local
+  redis-dev-data:
+    driver: local
+  postgres-dev-data:
+    driver: local
+  prometheus-dev-data:
+    driver: local
+  grafana-dev-data:
+    driver: local
+
+networks:
+  bot-dev-network:
+    driver: bridge 
