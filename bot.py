@@ -51,13 +51,35 @@ class PromoBot:
         lang = self.get_user_language(context)
         return get_text(key, lang, *args)
     
-    def get_language_selection_keyboard(self):
-        """Create language selection keyboard."""
-        keyboard = [
-            [InlineKeyboardButton("🇺🇸 English", callback_data='lang_en'), 
-             InlineKeyboardButton("🇷🇺 Русский", callback_data='lang_ru')],
-            [InlineKeyboardButton("🇷🇴 Română", callback_data='lang_ro')]
-        ]
+    def get_language_selection_keyboard(self, context=None):
+        """Create language selection keyboard with current language indication."""
+        current_lang = self.get_user_language(context) if context else 'en'
+        
+        keyboard = []
+        
+        # First row: English and Russian
+        row1 = []
+        if current_lang == 'en':
+            row1.append(InlineKeyboardButton("🇺🇸 English ✅ (Current)", callback_data='current_lang'))
+        else:
+            row1.append(InlineKeyboardButton("🇺🇸 English", callback_data='lang_en'))
+        
+        if current_lang == 'ru':
+            row1.append(InlineKeyboardButton("🇷🇺 Русский ✅ (Текущий)", callback_data='current_lang'))
+        else:
+            row1.append(InlineKeyboardButton("🇷🇺 Русский", callback_data='lang_ru'))
+        
+        keyboard.append(row1)
+        
+        # Second row: Romanian
+        if current_lang == 'ro':
+            keyboard.append([InlineKeyboardButton("🇷🇴 Română ✅ (Curent)", callback_data='current_lang')])
+        else:
+            keyboard.append([InlineKeyboardButton("🇷🇴 Română", callback_data='lang_ro')])
+        
+        # Back button
+        keyboard.append([InlineKeyboardButton(self.get_text('back_menu', context) if context else '🔙 Back to Menu', callback_data='main_menu')])
+        
         return InlineKeyboardMarkup(keyboard)
     
     def get_main_menu_keyboard(self, context):
@@ -184,14 +206,23 @@ class PromoBot:
         
         if channel_id:
             auto_status = self.get_text('auto_post_on', context) if auto_post else self.get_text('auto_post_off', context)
+            
+            # Check if there's post history to show clear option
+            post_history = context.user_data.get('post_history', [])
+            
             keyboard = [
                 [InlineKeyboardButton(self.get_text('current_channel', context, channel_id), callback_data='channel_info')],
                 [InlineKeyboardButton(self.get_text('change_channel', context), callback_data='set_channel'),
                  InlineKeyboardButton(self.get_text('remove_channel', context), callback_data='remove_channel')],
                 [InlineKeyboardButton(self.get_text('auto_post_toggle', context, auto_status), callback_data='toggle_autopost')],
-                [InlineKeyboardButton(self.get_text('post_history', context), callback_data='post_history')],
-                [InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]
+                [InlineKeyboardButton(self.get_text('post_history', context), callback_data='post_history')]
             ]
+            
+            # Add clear history button if there's history
+            if post_history:
+                keyboard.append([InlineKeyboardButton(self.get_text('clear_history_btn', context), callback_data='clear_post_history')])
+            
+            keyboard.append([InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')])
         else:
             keyboard = [
                 [InlineKeyboardButton(self.get_text('add_channel_group', context), callback_data='set_channel')],
@@ -290,6 +321,11 @@ class PromoBot:
                     context.user_data['language'] = lang
                     storage.save_user_data(user.id, context.user_data)
                     await self.show_main_menu(query, context)
+            elif callback_data == 'current_lang':
+                # User clicked on current language - show a message
+                current_lang = self.get_user_language(context)
+                lang_names = {'en': 'English', 'ru': 'Русский', 'ro': 'Română'}
+                await query.answer(f"✅ {lang_names.get(current_lang, 'English')} is already selected!", show_alert=True)
             elif callback_data == 'language_select':
                 await self.show_language_selection(query, context)
             elif callback_data == 'help':
@@ -343,6 +379,10 @@ class PromoBot:
                 await self.toggle_autopost(query, context)
             elif callback_data == 'post_history':
                 await self.show_post_history(query, context)
+            elif callback_data == 'clear_post_history':
+                await self.clear_post_history(query, context)
+            elif callback_data == 'confirm_clear_history':
+                await self.confirm_clear_post_history(query, context)
             elif callback_data == 'post_to_channel':
                 await self.initiate_channel_post(query, context)
             elif callback_data == 'confirm_post':
@@ -648,10 +688,21 @@ class PromoBot:
     
     async def show_language_selection(self, query, context):
         """Show language selection."""
-        language_text = f"{self.get_text('language_title', context)}\n\n{self.get_text('language_subtitle', context)}"
+        current_lang = self.get_user_language(context)
+        lang_names = {
+            'en': '🇺🇸 English', 
+            'ru': '🇷🇺 Русский', 
+            'ro': '🇷🇴 Română'
+        }
+        current_lang_name = lang_names.get(current_lang, '🇺🇸 English')
+        
+        language_text = f"{self.get_text('language_title', context)}\n\n"
+        language_text += f"{self.get_text('current_language', context)}: {current_lang_name}\n\n"
+        language_text += f"{self.get_text('language_subtitle', context)}"
+        
         await query.edit_message_text(
             language_text,
-            reply_markup=self.get_language_selection_keyboard()
+            reply_markup=self.get_language_selection_keyboard(context)
         )
     
     async def show_my_products(self, query, context):
@@ -1061,29 +1112,37 @@ class PromoBot:
             # Post to channel
             sent_message = await context.bot.send_message(f"@{channel_id}", final_post)
             
-            # Store post history
+            # Store post history with enhanced details
             if 'post_history' not in context.user_data:
                 context.user_data['post_history'] = []
             
+            from datetime import datetime
             context.user_data['post_history'].append({
                 'product': product_name,
-                'timestamp': sent_message.date.strftime('%Y-%m-%d %H:%M'),
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 'message_id': sent_message.message_id,
-                'status': 'success'
+                'channel_id': channel_id,
+                'status': 'success',
+                'text_length': len(final_post),
+                'has_hashtags': has_hashtags
             })
             
             return True, self.get_text('posted_successfully', context, channel_id)
             
         except Exception as e:
-            # Store failed post
+            # Store failed post with enhanced details
             if 'post_history' not in context.user_data:
                 context.user_data['post_history'] = []
             
+            from datetime import datetime
             context.user_data['post_history'].append({
                 'product': product_name,
-                'timestamp': 'Failed',
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 'message_id': None,
-                'status': f'failed: {str(e)}'
+                'channel_id': channel_id,
+                'status': f'failed: {str(e)}',
+                'text_length': len(text) if text else 0,
+                'has_hashtags': '#' in text if text else False
             })
             
             return False, self.get_text('failed_to_post', context, str(e))
@@ -1193,13 +1252,99 @@ class PromoBot:
             text = f"{self.get_text('post_history_title', context)}\n\n{self.get_text('post_history_empty', context)}"
         else:
             text = f"{self.get_text('post_history_title', context)}\n\n"
-            for i, post in enumerate(post_history[-10:], 1):  # Show last 10 posts
-                status = "✅" if post['status'] == 'success' else "❌"
-                text += f"{i}. {status} {post['product']} - {post['timestamp']}\n"
+            
+            # Show last 15 posts with better formatting
+            recent_posts = post_history[-15:]
+            for i, post in enumerate(recent_posts, 1):
+                status_icon = "✅" if post['status'] == 'success' else "❌"
+                product_name = post.get('product', 'Unknown')
+                timestamp = post.get('timestamp', 'Unknown time')
+                
+                # Add channel info if available
+                channel_info = context.user_data.get('channel_info', {})
+                channel_id = channel_info.get('channel_id', 'Unknown')
+                
+                # Format the entry
+                if post['status'] == 'success':
+                    text += f"{status_icon} **{product_name}**\n"
+                    text += f"   📅 {timestamp}\n"
+                    text += f"   📢 @{channel_id}\n"
+                    if post.get('message_id'):
+                        text += f"   🔗 Message ID: {post['message_id']}\n"
+                else:
+                    text += f"{status_icon} **{product_name}** (Failed)\n"
+                    text += f"   📅 {timestamp}\n"
+                    text += f"   ❌ Error: {post['status'].replace('failed: ', '')}\n"
+                
+                text += "\n"
+            
+            # Add summary
+            total_posts = len(post_history)
+            successful_posts = len([p for p in post_history if p['status'] == 'success'])
+            failed_posts = total_posts - successful_posts
+            
+            text += f"📊 **{self.get_text('post_history_summary', context)}**\n"
+            text += f"   {self.get_text('post_history_total', context)} {total_posts}\n"
+            text += f"   ✅ {self.get_text('post_history_successful', context)} {successful_posts}\n"
+            if failed_posts > 0:
+                text += f"   ❌ {self.get_text('post_history_failed', context)} {failed_posts}\n"
         
         await query.edit_message_text(
             text,
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(self.get_text('back_menu', context), callback_data='channel_settings')]])
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(self.get_text('back_menu', context), callback_data='channel_settings')]]),
+            parse_mode='Markdown'
+        )
+
+    async def clear_post_history(self, query, context):
+        """Clear post history with confirmation."""
+        post_history = context.user_data.get('post_history', [])
+        
+        if not post_history:
+            await query.edit_message_text(
+                "📊 **Post History**\n\nNo posts to clear.",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(self.get_text('back_menu', context), callback_data='channel_settings')]]),
+                parse_mode='Markdown'
+            )
+            return
+        
+        # Show confirmation
+        total_posts = len(post_history)
+        confirmation_text = f"🗑️ **Clear Post History**\n\n"
+        confirmation_text += f"Are you sure you want to delete all {total_posts} posts from your history?\n\n"
+        confirmation_text += "⚠️ This action cannot be undone!"
+        
+        keyboard = [
+            [InlineKeyboardButton("✅ Yes, Clear All", callback_data='confirm_clear_history'),
+             InlineKeyboardButton("❌ Cancel", callback_data='channel_settings')]
+        ]
+        
+        await query.edit_message_text(
+            confirmation_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
+
+    async def confirm_clear_post_history(self, query, context):
+        """Confirm and execute clear post history."""
+        post_history = context.user_data.get('post_history', [])
+        total_posts = len(post_history)
+        
+        # Clear the post history
+        context.user_data['post_history'] = []
+        
+        # Save user data to persist the change
+        user_id = query.from_user.id
+        storage.save_user_data(user_id, context.user_data)
+        
+        # Show success message
+        success_text = f"✅ **History Cleared**\n\n"
+        success_text += f"Successfully deleted {total_posts} posts from your history.\n\n"
+        success_text += "Your post history is now empty."
+        
+        await query.edit_message_text(
+            success_text,
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(self.get_text('back_menu', context), callback_data='channel_settings')]]),
+            parse_mode='Markdown'
         )
 
     async def initiate_channel_post(self, query, context):
@@ -1256,6 +1401,10 @@ class PromoBot:
         
         # Post to channel
         success, message = await self.post_to_channel_action(context, promo_text, product_name)
+        
+        # Save user data after posting to persist the post history
+        user_id = query.from_user.id
+        storage.save_user_data(user_id, context.user_data)
         
         # Show result
         if success:

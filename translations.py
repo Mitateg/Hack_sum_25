@@ -77,7 +77,14 @@ TRANSLATIONS = {
         'generate_instructions': 'Please describe your product or service, and I\'ll create an engaging promotional text for you!\n\nExample: "Wireless headphones with noise cancellation"',
         'empty_product': '❌ Please provide a product description.',
         'promo_result': '✨ Promotional text for "{}"',
+        'promo_options': '💡 You can generate another version, translate to other languages, or edit the text above.',
         'promo_footer': '💡 You can generate another version, translate to other languages, or edit the text above.',
+        'invalid_product_name': '❌ Please provide a valid product name (at least 2 characters).',
+        'generation_error': '❌ Failed to generate promotional text. Please try again or contact support.',
+        'unknown_command': '❓ I didn\'t understand that. Please use the menu below or send a product URL.',
+        'product_added': 'Product Added Successfully!',
+        'max_products_reached': '⚠️ You\'ve reached the maximum limit of {} products. Please delete some products first.',
+        'description_label': 'Description',
         'general_error': '❌ An error occurred. Please try again.',
         
         # Channel settings
@@ -92,6 +99,13 @@ TRANSLATIONS = {
         'auto_post_off': '❌ OFF',
         'auto_post_toggle': '🤖 Auto-post: {}',
         'post_history': '📊 Post History',
+        'post_history_title': '📊 Post History',
+        'post_history_empty': 'No posts yet. Generate promotional content and post to your channel!',
+        'post_history_summary': 'Summary:',
+        'post_history_total': 'Total posts:',
+        'post_history_successful': 'Successful:',
+        'post_history_failed': 'Failed:',
+        'clear_history_btn': '🗑️ Clear History',
         'add_channel_group': '➕ Add Channel/Group',
         'add_channel_title': '📢 Add Channel/Group',
         'add_channel_instructions': 'Please send me the channel/group name (with @) or ID.\n\nExample: @mychannel\n\nNote: The bot must be added as admin with posting permissions.',
@@ -101,8 +115,6 @@ TRANSLATIONS = {
         'autopost_disabled_title': '🤖 Auto-post Disabled',
         'autopost_enabled_message': 'Auto-posting is now enabled.',
         'autopost_disabled_message': 'Auto-posting is now disabled.',
-        'post_history_title': '📊 Post History',
-        'post_history_empty': 'No posts yet. Generate promotional content and post to your channel!',
         'channel_added_title': '✅ Channel Added Successfully',
         'channel_added_message': 'Channel @{} has been configured!',
         'channel_setup_failed_title': '❌ Channel Setup Failed',
@@ -136,6 +148,7 @@ TRANSLATIONS = {
         # Language selection
         'language_title': '🌐 Language Selection',
         'language_subtitle': 'Choose your preferred language:',
+        'current_language': 'Current language',
         
         # Stop functionality
         'confirm_stop_title': '🛑 Stop Bot',
@@ -238,7 +251,14 @@ TRANSLATIONS = {
         'generate_instructions': 'Пожалуйста, опишите ваш товар или услугу, и я создам привлекательный рекламный текст!\n\nПример: "Беспроводные наушники с шумоподавлением"',
         'empty_product': '❌ Пожалуйста, предоставьте описание товара.',
         'promo_result': '✨ Рекламный текст для "{}"',
+        'promo_options': '💡 Вы можете создать другую версию, перевести на другие языки или отредактировать текст выше.',
         'promo_footer': '💡 Вы можете создать другую версию, перевести на другие языки или отредактировать текст выше.',
+        'invalid_product_name': '❌ Пожалуйста, предоставьте действительное название товара (не менее 2 символов).',
+        'generation_error': '❌ Не удалось создать рекламный текст. Пожалуйста, попробуйте еще раз или обратитесь в поддержку.',
+        'unknown_command': '❓ Я не понял этого. Пожалуйста, используйте меню ниже или отправьте URL товара.',
+        'product_added': 'Товар успешно добавлен!',
+        'max_products_reached': '⚠️ Вы достигли максимального лимита в {} товаров. Пожалуйста, удалите некоторые товары сначала.',
+        'description_label': 'Описание',
         'general_error': '❌ Произошла ошибка. Пожалуйста, попробуйте снова.',
         
         # Channel settings
@@ -253,6 +273,13 @@ TRANSLATIONS = {
         'auto_post_off': '❌ ВЫКЛ',
         'auto_post_toggle': '🤖 Авто-публикация: {}',
         'post_history': '📊 История публикаций',
+        'post_history_title': '📊 История публикаций',
+        'post_history_empty': 'Публикаций пока нет. Создайте рекламный контент и опубликуйте его в канале!',
+        'post_history_summary': 'Итоги:',
+        'post_history_total': 'Всего публикаций:',
+        'post_history_successful': 'Успешных:',
+        'post_history_failed': 'Неудачных:',
+        'clear_history_btn': '🗑️ Очистить историю',
         'add_channel_group': '➕ Добавить канал/группу',
         'add_channel_title': '📢 Добавить канал/группу',
         'add_channel_instructions': 'Пожалуйста, отправьте мне имя канала/группы (с @) или ID.\n\nПример: @mychannel\n\nПримечание: Бот должен быть добавлен как администратор с правами публикации.',
@@ -262,8 +289,6 @@ TRANSLATIONS = {
         'autopost_disabled_title': '🤖 Авто-публикация отключена',
         'autopost_enabled_message': 'Авто-публикация теперь включена.',
         'autopost_disabled_message': 'Авто-публикация теперь отключена.',
-        'post_history_title': '📊 История публикаций',
-        'post_history_empty': 'Публикаций пока нет. Создайте рекламный контент и опубликуйте его в канале!',
         'channel_added_title': '✅ Канал успешно добавлен',
         'channel_added_message': 'Канал @{} настроен!',
         'channel_setup_failed_title': '❌ Настройка канала не удалась',
@@ -292,11 +317,12 @@ TRANSLATIONS = {
         
         # Examples
         'examples_title': '💡 Примеры',
-        'examples_content': 'Пример 1: "Беспроводные Bluetooth наушники с активным шумоподавлением"\n\nПример 2: "Органический крем для кожи с натуральными ингредиентами"\n\nПример 3: "Игровой ноутбук с видеокартой RTX"\n\nПросто опишите ваш товар, и я создам потрясающий рекламный текст!',
+        'examples_content': 'Пример 1: "Беспроводные Bluetooth наушники с активным шумоподавлением"\n\nПример 2: "Органический крем для кожи с натуральными ингредиентами"\n\nПример 3: "Laptop de gaming cu placă grafică RTX"\n\nПросто опишите ваш товар, и я создам потрясающий рекламный текст!',
         
         # Language selection
         'language_title': '🌐 Выбор языка',
         'language_subtitle': 'Выберите предпочитаемый язык:',
+        'current_language': 'Текущий язык',
         
         # Stop functionality
         'confirm_stop_title': '🛑 Остановить бота',
@@ -401,7 +427,14 @@ TRANSLATIONS = {
         'generate_instructions': 'Te rog descrie produsul sau serviciul tău, și voi crea un text promoțional atractiv!\n\nExemplu: "Căști wireless cu anularea zgomotului"',
         'empty_product': '❌ Te rog furnizează o descriere a produsului.',
         'promo_result': '✨ Text promoțional pentru "{}"',
+        'promo_options': '💡 Poți genera o altă versiune, traduce în alte limbi sau edita textul de mai sus.',
         'promo_footer': '💡 Poți genera o altă versiune, traduce în alte limbi sau edita textul de mai sus.',
+        'invalid_product_name': '❌ Te rog furnizează un nume de produs valid (cel puțin 2 caractere).',
+        'generation_error': '❌ Nu s-a putut genera text promoțional. Te rog încearcă din nou sau contactă suportul.',
+        'unknown_command': '❓ Nu am înțeles asta. Te rog să folosești meniul de mai jos sau trimite URL-ul produsului.',
+        'product_added': 'Produs Adăugat Cu Succes!',
+        'max_products_reached': '⚠️ Ai atins limita maximă de {} produse. Te rog șterge câteva produse mai întâi.',
+        'description_label': 'Descriere',
         'general_error': '❌ A apărut o eroare. Te rog încearcă din nou.',
         
         # Channel settings
@@ -416,6 +449,13 @@ TRANSLATIONS = {
         'auto_post_off': '❌ OPRIT',
         'auto_post_toggle': '🤖 Postare Automată: {}',
         'post_history': '📊 Istoric Postări',
+        'post_history_title': '📊 Istoric Postări',
+        'post_history_empty': 'Nu sunt postări încă. Generează conținut promoțional și postează în canalul tău!',
+        'post_history_summary': 'Rezumat:',
+        'post_history_total': 'Total postări:',
+        'post_history_successful': 'Reușite:',
+        'post_history_failed': 'Eșuate:',
+        'clear_history_btn': '🗑️ Șterge Istoric',
         'add_channel_group': '➕ Adaugă Canal/Grup',
         'add_channel_title': '📢 Adaugă Canal/Grup',
         'add_channel_instructions': 'Te rog trimite-mi numele canalului/grupului (cu @) sau ID-ul.\n\nExemplu: @mychannel\n\nNotă: Bot-ul trebuie să fie adăugat ca administrator cu permisiuni de postare.',
@@ -425,8 +465,6 @@ TRANSLATIONS = {
         'autopost_disabled_title': '🤖 Postare Automată Dezactivată',
         'autopost_enabled_message': 'Postarea automată este acum activată.',
         'autopost_disabled_message': 'Postarea automată este acum dezactivată.',
-        'post_history_title': '📊 Istoric Postări',
-        'post_history_empty': 'Nu sunt postări încă. Generează conținut promoțional și postează în canalul tău!',
         'channel_added_title': '✅ Canal Adăugat cu Succes',
         'channel_added_message': 'Canalul @{} a fost configurat!',
         'channel_setup_failed_title': '❌ Configurarea Canalului a Eșuat',
@@ -460,6 +498,7 @@ TRANSLATIONS = {
         # Language selection
         'language_title': '🌐 Selecția Limbii',
         'language_subtitle': 'Alege limba preferată:',
+        'current_language': 'Limba curentă',
         
         # Stop functionality
         'confirm_stop_title': '🛑 Oprește Bot-ul',
