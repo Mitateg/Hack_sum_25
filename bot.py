@@ -10,11 +10,12 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
+from datetime import datetime
 
 from config import config
 from translations import get_text
 from storage import storage
-from utils import rate_limit, sanitize_input, scraper
+from utils import rate_limit, sanitize_input, scraper, advanced_sanitize_input, validate_url_security, generate_secure_hashtags
 
 # Configure OpenAI
 openai.api_key = config.openai_api_key
@@ -206,421 +207,409 @@ class PromoBot:
         except:
             return False
 
-    @rate_limit(max_calls=config.rate_limit_requests, window=config.rate_limit_window)
+    @rate_limit(max_calls=100, window=60, action="start_command")
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Start command handler."""
-        user_id = update.effective_user.id
-        
-        # Update statistics
-        storage.update_stats('total_users')
-        storage.update_stats('total_messages')
-        
-        # Get user data
-        user_data = storage.get_user_data(user_id)
-        context.user_data.update(user_data)
-        
-        # Show language selection if not set
-        if not context.user_data.get('language'):
-            await update.message.reply_text(
-                get_text('welcome_message', 'en'),
-                reply_markup=self.get_language_selection_keyboard()
-            )
-        else:
-            await self.show_main_menu_message(update, context)
-    
-    async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Help command handler."""
-        storage.update_stats('total_messages')
-        
-        await update.message.reply_text(
-            self.get_text('help_content', context)
-        )
-    
-    async def stop_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Stop command handler."""
-        keyboard = [
-            [InlineKeyboardButton(self.get_text('confirm_stop_btn', context), callback_data='stop_bot'),
-             InlineKeyboardButton(self.get_text('cancel_stop_btn', context), callback_data='main_menu')]
-        ]
-        
-        await update.message.reply_text(
-            self.get_text('confirm_stop_message', context),
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
-    
-    async def button_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle button callbacks."""
-        query = update.callback_query
-        await query.answer()
-        
-        storage.update_stats('total_messages')
-        
-        # Language selection
-        if query.data.startswith('lang_'):
-            lang = query.data.split('_')[1]
-            context.user_data['language'] = lang
-            
-            # Save user data
-            user_id = query.from_user.id
-            storage.save_user_data(user_id, context.user_data)
-            
-            await query.edit_message_text(
-                self.get_text('language_selected', context),
-                reply_markup=self.get_main_menu_keyboard(context)
-            )
-        
-        # Main menu actions
-        elif query.data == 'main_menu':
-            await self.show_main_menu(query, context)
-        elif query.data == 'help':
-            await self.show_help(query, context)
-        elif query.data == 'examples':
-            await self.show_examples(query, context)
-        elif query.data == 'language_select':
-            await self.show_language_selection(query, context)
-        elif query.data == 'confirm_stop':
-            await self.show_stop_confirmation(query, context)
-        elif query.data == 'stop_bot':
-            await self.stop_bot(query, context)
-        
-        # Product management
-        elif query.data == 'my_products':
-            await self.show_my_products(query, context)
-        elif query.data == 'add_product':
-            await self.prompt_add_product(query, context)
-        elif query.data == 'clear_products':
-            await self.clear_all_products(query, context)
-        elif query.data.startswith('product_'):
-            product_index = int(query.data.split('_')[1])
-            await self.show_product_detail(query, context, product_index)
-        elif query.data.startswith('delete_product_'):
-            product_index = int(query.data.split('_')[2])
-            await self.delete_product(query, context, product_index)
-        elif query.data.startswith('gen_promo_'):
-            product_index = int(query.data.split('_')[2])
-            await self.generate_product_promo(query, context, product_index)
-        
-        # Promo generation
-        elif query.data == 'generate_promo':
-            await self.show_generate_promo(query, context)
-        elif query.data == 'from_prompt':
-            await self.show_promo_from_prompt(query, context)
-        elif query.data == 'promo_from_product':
-            await self.show_promo_from_product(query, context)
-        elif query.data == 'promo_from_prompt':
-            await self.show_promo_from_prompt(query, context)
-        elif query.data.startswith('select_product_'):
-            product_index = int(query.data.split('_')[2])
-            await self.generate_product_promo(query, context, product_index)
-        elif query.data == 'generate_another':
-            context.user_data.pop('awaiting_promo_input', None)
-            await self.show_promo_from_prompt(query, context)
-        
-        # Channel settings
-        elif query.data == 'channel_settings':
-            await self.show_channel_settings(query, context)
-        elif query.data == 'set_channel':
-            await self.prompt_channel_setup(query, context)
-        elif query.data == 'remove_channel':
-            await self.remove_channel(query, context)
-        elif query.data == 'toggle_autopost':
-            await self.toggle_autopost(query, context)
-        elif query.data == 'post_history':
-            await self.show_post_history(query, context)
-        
-        # Post to channel workflow
-        elif query.data == 'post_to_channel':
-            await self.initiate_channel_post(query, context)
-        elif query.data == 'confirm_post':
-            await self.confirm_channel_post(query, context)
-        elif query.data == 'edit_post':
-            await self.edit_post_text(query, context)
-        elif query.data == 'cancel_post':
-            await self.cancel_post(query, context)
-        
-        # Text editing and translation
-        elif query.data == 'translate_text':
-            await self.translate_generated_text(query, context)
-        elif query.data == 'edit_generated_text':
-            await self.edit_generated_text(query, context)
-        elif query.data.startswith('translate_to_'):
-            target_lang = query.data.split('_')[2]
-            await self.perform_translation(query, context, target_lang)
-        
-        # Other features (placeholders for now)
-        else:
-            await query.edit_message_text(
-                f"🚧 Feature Coming Soon\n\nThe '{query.data}' feature is being implemented.",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(self.get_text('back_menu', context), callback_data='main_menu')]])
-            )
-    
-    async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle text messages from users."""
-        # Handle channel input
-        if await self.handle_channel_input(update, context):
-            return
-        
-        # Handle post editing
-        if await self.handle_post_edit(update, context):
-            return
-            
-        # Handle generated text editing
-        if await self.handle_generated_text_edit(update, context):
-            return
-            
-        # Handle product link input
-        if await self.handle_product_link(update, context):
-            return
-        
-        # Handle regular product name input for text generation
-        await self.generate_promo_text(update, context)
-    
-    async def generate_promo_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Generate promotional text for the given product."""
-        # Ensure user has a language set
-        if 'language' not in context.user_data:
-            context.user_data['language'] = 'en'
-
-        product_name = update.message.text.strip()
-        
-        if not product_name:
-            await update.message.reply_text(
-                self.get_text('empty_product', context),
-                reply_markup=self.get_main_menu_keyboard(context)
-            )
-            return
-        
-        # Show typing action
-        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
-
+        """Handle /start command with enhanced security."""
         try:
-            # Create the prompt for OpenAI in the user's language
-            prompt = self.get_text('openai_prompt', context, product_name, product_name)
-            system_prompt = self.get_text('system_prompt', context)
-
-            # Generate response using OpenAI
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=300,
-                temperature=0.7
-            )
-
-            promo_text = response.choices[0].message.content.strip()
+            user = update.effective_user
+            logger.info(f"User {user.id} ({user.username}) started the bot")
             
-            # Store the generated text and product name for potential channel posting
-            context.user_data['last_generated_text'] = promo_text
-            context.user_data['last_product_name'] = product_name
+            # Load or create user data
+            user_data = storage.get_user_data(user.id)
+            context.user_data.update(user_data)
             
-            # Format the response
-            formatted_response = f"{self.get_text('promo_result', context, product_name)}\n\n{promo_text}\n\n---\n{self.get_text('promo_footer', context)}"
-
+            # Update statistics
+            storage.update_stats_secure('total_users')
+            storage.update_stats_secure('total_messages')
+            
+            # Send welcome message
             await update.message.reply_text(
-                formatted_response,
-                reply_markup=self.get_post_generation_keyboard(context)
-            )
-            
-            # Check for auto-posting
-            channel_info = context.user_data.get('channel_info', {})
-            if channel_info.get('auto_post', False) and channel_info.get('channel_id'):
-                # Auto post to channel
-                success, message = await self.post_to_channel_action(context, promo_text, product_name)
-                
-                # Notify user about auto-post result
-                status_emoji = "✅" if success else "❌"
-                auto_post_msg = f"\n\n{status_emoji} Auto-post: {message}"
-                
-                # Send additional message with auto-post status
-                await update.message.reply_text(auto_post_msg)
-
-        except Exception as e:
-            logger.error(f"Error generating promo text: {e}")
-            await update.message.reply_text(
-                self.get_text('general_error', context),
+                self.get_text('welcome', context, user.first_name or 'User'),
                 reply_markup=self.get_main_menu_keyboard(context)
             )
-    
-    async def handle_channel_input(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle channel input when user is setting up a channel."""
-        if not context.user_data.get('waiting_for_channel_input'):
-            return False
-        
-        channel_input = update.message.text.strip()
-        
-        # Clear the waiting state
-        context.user_data.pop('waiting_for_channel_input', None)
-        
-        # Validate channel format
-        if not (channel_input.startswith('@') or channel_input.startswith('-') or channel_input.isdigit()):
-            await update.message.reply_text(
-                "❌ Invalid channel format. Please use @channelname or channel ID.",
-                reply_markup=self.get_back_to_menu_keyboard(context)
-            )
-            return True
-        
-        # Remove @ if present for verification
-        channel_id = channel_input[1:] if channel_input.startswith('@') else channel_input
-        
-        # Verify channel permissions
-        success, message = await self.verify_channel_permissions(context, channel_id)
-        
-        if success:
-            # Store channel configuration
-            context.user_data['channel_info'] = {
-                'channel_id': channel_id,
-                'auto_post': False
-            }
             
-            await update.message.reply_text(
-                self.get_text('channel_added_title', context) + "\n\n" + 
-                self.get_text('channel_added_message', context, channel_id),
-                reply_markup=self.get_channel_settings_keyboard(context)
-            )
-        else:
-            await update.message.reply_text(
-                self.get_text('channel_setup_failed_title', context) + "\n\n" + 
-                self.get_text('channel_setup_failed_message', context),
-                reply_markup=self.get_back_to_menu_keyboard(context)
-            )
-        
-        return True
+        except Exception as e:
+            logger.error(f"Error in start command for user {user.id}: {e}", exc_info=True)
+            await update.message.reply_text("Sorry, an error occurred. Please try again.")
 
-    async def handle_post_edit(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle post text editing."""
-        if not context.user_data.get('editing_post'):
-            return False
-        
-        # Clear editing state
-        context.user_data.pop('editing_post', None)
-        
-        # Get the edited text
-        edited_text = update.message.text.strip()
-        
-        if not edited_text:
+    @rate_limit(max_calls=50, window=60, action="help_command")
+    async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /help command with rate limiting."""
+        try:
             await update.message.reply_text(
-                "❌ Please provide some text.",
+                self.get_text('help_text', context),
                 reply_markup=self.get_back_to_menu_keyboard(context)
             )
-            return True
-        
-        # Update the pending post text
-        context.user_data['pending_post_text'] = edited_text
-        
-        # Show updated confirmation
-        await self.initiate_channel_post_from_edit(update, context)
-        return True
+        except Exception as e:
+            logger.error(f"Error in help command: {e}", exc_info=True)
 
-    async def handle_generated_text_edit(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle editing of generated promotional text."""
-        if not context.user_data.get('editing_generated_text'):
-            return False
-        
-        # Clear editing state
-        context.user_data.pop('editing_generated_text', None)
-        
-        # Get the edited text
-        edited_text = update.message.text.strip()
-        
-        if not edited_text:
+    @rate_limit(max_calls=10, window=300, action="stop_command")
+    async def stop_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /stop command with confirmation."""
+        try:
             await update.message.reply_text(
-                "❌ Please provide some text.",
-                reply_markup=self.get_back_to_menu_keyboard(context)
+                self.get_text('stop_confirmation', context),
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton(self.get_text('stop_yes', context), callback_data='confirm_stop'),
+                     InlineKeyboardButton(self.get_text('stop_no', context), callback_data='main_menu')]
+                ])
             )
-            return True
+        except Exception as e:
+            logger.error(f"Error in stop command: {e}", exc_info=True)
+
+    @rate_limit(max_calls=100, window=60, action="button_callback")
+    async def button_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle button callbacks with enhanced security and error handling."""
+        query = update.callback_query
+        user = update.effective_user
         
-        # Update the stored generated text
-        context.user_data['last_generated_text'] = edited_text
+        try:
+            await query.answer()
+            
+            # Simplified validation - less strict
+            if not query.data:
+                logger.warning(f"Empty callback data from user {user.id}")
+                return
+            
+            # Basic sanitization only
+            callback_data = query.data.strip()
+            
+            # Update message count
+            storage.update_stats_secure('total_messages')
+            
+            # Load user data
+            user_data = storage.get_user_data(user.id)
+            context.user_data.update(user_data)
+            
+            # Handle different callback types
+            if callback_data == 'main_menu':
+                await self.show_main_menu(query, context)
+            elif callback_data.startswith('lang_'):
+                lang = callback_data.split('_')[1]
+                if lang in ['en', 'ru', 'ro']:
+                    context.user_data['language'] = lang
+                    storage.save_user_data(user.id, context.user_data)
+                    await self.show_main_menu(query, context)
+            elif callback_data == 'language_select':
+                await self.show_language_selection(query, context)
+            elif callback_data == 'help':
+                await self.show_help(query, context)
+            elif callback_data == 'examples':
+                await self.show_examples(query, context)
+            elif callback_data == 'my_products':
+                await self.show_my_products(query, context)
+            elif callback_data.startswith('product_'):
+                try:
+                    product_index = int(callback_data.split('_')[1])
+                    if 0 <= product_index < len(context.user_data.get('products', [])):
+                        await self.show_product_detail(query, context, product_index)
+                except (ValueError, IndexError):
+                    pass
+            elif callback_data == 'add_product':
+                await self.prompt_add_product(query, context)
+            elif callback_data == 'clear_products':
+                await self.clear_all_products(query, context)
+            elif callback_data == 'generate_promo':
+                await self.show_generate_promo(query, context)
+            elif callback_data == 'promo_from_prompt':
+                await self.show_promo_from_prompt(query, context)
+            elif callback_data == 'promo_from_product':
+                await self.show_promo_from_product(query, context)
+            elif callback_data.startswith('select_product_'):
+                try:
+                    product_index = int(callback_data.split('_')[2])
+                    await self.generate_product_promo(query, context, product_index)
+                except (ValueError, IndexError):
+                    pass
+            elif callback_data.startswith('gen_promo_'):
+                try:
+                    product_index = int(callback_data.split('_')[2])
+                    await self.generate_product_promo(query, context, product_index)
+                except (ValueError, IndexError):
+                    pass
+            elif callback_data.startswith('delete_product_'):
+                try:
+                    product_index = int(callback_data.split('_')[2])
+                    await self.delete_product(query, context, product_index)
+                except (ValueError, IndexError):
+                    pass
+            elif callback_data == 'channel_settings':
+                await self.show_channel_settings(query, context)
+            elif callback_data == 'set_channel':
+                await self.prompt_channel_setup(query, context)
+            elif callback_data == 'remove_channel':
+                await self.remove_channel(query, context)
+            elif callback_data == 'toggle_autopost':
+                await self.toggle_autopost(query, context)
+            elif callback_data == 'post_history':
+                await self.show_post_history(query, context)
+            elif callback_data == 'post_to_channel':
+                await self.initiate_channel_post(query, context)
+            elif callback_data == 'confirm_post':
+                await self.confirm_channel_post(query, context)
+            elif callback_data == 'edit_post':
+                await self.edit_post_text(query, context)
+            elif callback_data == 'cancel_post':
+                await self.cancel_post(query, context)
+            elif callback_data == 'translate_text':
+                await self.translate_generated_text(query, context)
+            elif callback_data.startswith('translate_to_'):
+                lang = callback_data.split('_')[2]
+                await self.perform_translation(query, context, lang)
+            elif callback_data == 'edit_generated_text':
+                await self.edit_generated_text(query, context)
+            elif callback_data == 'generate_another':
+                await self.show_generate_promo(query, context)
+            elif callback_data == 'confirm_stop':
+                await self.show_stop_confirmation(query, context)
+            elif callback_data == 'stop_bot':
+                await self.stop_bot(query, context)
+            
+        except Exception as e:
+            logger.error(f"Error in button callback for user {user.id}: {e}", exc_info=True)
+            try:
+                await query.edit_message_text(
+                    "An error occurred. Please try again.",
+                    reply_markup=self.get_back_to_menu_keyboard(context)
+                )
+            except:
+                pass
+
+    @rate_limit(max_calls=50, window=60, action="message_handling")
+    async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle text messages with simplified validation."""
+        user = update.effective_user
+        message_text = update.message.text
         
-        # Show the updated text with options
-        formatted_response = f"✅ Text updated!\n\n{edited_text}\n\n---\n{self.get_text('promo_footer', context)}"
+        try:
+            # Simplified validation - less strict
+            if not message_text:
+                await update.message.reply_text("Please send a valid message.")
+                return
+            
+            # Basic sanitization only
+            clean_text = message_text.strip()
+            
+            # Load user data
+            user_data = storage.get_user_data(user.id)
+            context.user_data.update(user_data)
+            
+            # Update statistics
+            storage.update_stats_secure('total_messages')
+            
+            # Handle different message types based on user state
+            if context.user_data.get('awaiting_promo_input'):
+                await self.generate_promo_text(update, context)
+            elif context.user_data.get('awaiting_channel_input') or context.user_data.get('waiting_for_channel_input'):
+                await self.handle_channel_input(update, context)
+            elif context.user_data.get('awaiting_post_edit') or context.user_data.get('editing_post'):
+                await self.handle_post_edit(update, context)
+            elif context.user_data.get('awaiting_generated_text_edit') or context.user_data.get('editing_generated_text'):
+                await self.handle_generated_text_edit(update, context)
+            elif clean_text.startswith('http') or context.user_data.get('waiting_for_product_link'):
+                await self.handle_product_link(update, context)
+            else:
+                # Unknown message type
+                await update.message.reply_text(
+                    self.get_text('unknown_command', context),
+                    reply_markup=self.get_main_menu_keyboard(context)
+                )
+                
+        except Exception as e:
+            logger.error(f"Error handling message from user {user.id}: {e}", exc_info=True)
+            await update.message.reply_text(
+                "An error occurred processing your message. Please try again.",
+                reply_markup=self.get_main_menu_keyboard(context)
+            )
+
+    @rate_limit(max_calls=20, window=300, action="promo_generation")
+    async def generate_promo_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Generate promotional text with simplified validation."""
+        user = update.effective_user
+        product_name = update.message.text
         
-        await update.message.reply_text(
-            formatted_response,
-            reply_markup=self.get_post_generation_keyboard(context)
-        )
-        return True
+        try:
+            # Simplified validation
+            clean_product_name = product_name.strip()
+            
+            if not clean_product_name or len(clean_product_name) < 2:
+                await update.message.reply_text(
+                    self.get_text('invalid_product_name', context),
+                    reply_markup=self.get_back_to_menu_keyboard(context)
+                )
+                return
+            
+            # Clear the awaiting state
+            context.user_data.pop('awaiting_promo_input', None)
+            
+            # Send processing message
+            processing_msg = await update.message.reply_text("🔄 Generating promotional text...")
+            
+            try:
+                # Create the prompt for OpenAI
+                prompt = self.get_text('openai_prompt', context, clean_product_name, clean_product_name)
+                system_prompt = self.get_text('system_prompt', context)
+                
+                # Generate promotional text with OpenAI
+                response = await openai.ChatCompletion.acreate(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=300,
+                    temperature=0.7,
+                    timeout=30
+                )
+                
+                promo_text = response.choices[0].message.content.strip()
+                
+                if not promo_text:
+                    raise ValueError("Generated text is empty")
+                
+                # Store generated text
+                context.user_data['last_generated_text'] = promo_text
+                context.user_data['last_product_name'] = clean_product_name
+                
+                # Generate hashtags
+                hashtags = generate_secure_hashtags(clean_product_name)
+                if hashtags:
+                    promo_text += f"\n\n{hashtags}"
+                
+                # Update statistics
+                storage.update_stats_secure('total_promos_generated')
+                
+                # Save user data
+                storage.save_user_data(user.id, context.user_data)
+                
+                # Send result
+                result_text = f"{self.get_text('promo_result', context, clean_product_name)}\n\n{promo_text}\n\n{self.get_text('promo_options', context)}"
+                
+                await processing_msg.edit_text(
+                    result_text,
+                    reply_markup=self.get_post_generation_keyboard(context)
+                )
+                
+                logger.info(f"Generated promo for user {user.id}, product: {clean_product_name[:50]}")
+                
+            except Exception as openai_error:
+                logger.error(f"OpenAI API error for user {user.id}: {openai_error}")
+                await processing_msg.edit_text(
+                    self.get_text('generation_error', context),
+                    reply_markup=self.get_back_to_menu_keyboard(context)
+                )
+                storage.update_stats_secure('total_errors')
+                
+        except Exception as e:
+            logger.error(f"Error in generate_promo_text for user {user.id}: {e}", exc_info=True)
+            try:
+                await update.message.reply_text(
+                    "An error occurred during text generation. Please try again.",
+                    reply_markup=self.get_back_to_menu_keyboard(context)
+                )
+            except:
+                pass
 
     async def handle_product_link(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle product link input and extraction."""
-        if not context.user_data.get('waiting_for_product_link'):
-            return False
-        
+        """Handle product link with simplified validation."""
+        user = update.effective_user
         url = update.message.text.strip()
         
-        # Clear waiting state
-        context.user_data.pop('waiting_for_product_link', None)
-        
-        # Validate URL
-        if not self.is_valid_url(url):
-            await update.message.reply_text(
-                self.get_text('invalid_url', context),
-                reply_markup=self.get_back_to_menu_keyboard(context)
-            )
-            return True
-        
-        # Show processing message
-        processing_msg = await update.message.reply_text(
-            self.get_text('analyzing_product', context)
-        )
-        
         try:
-            # Extract product information
-            product_info = await self.scrape_product_info(url)
+            # Clear waiting state
+            context.user_data.pop('waiting_for_product_link', None)
             
-            if product_info:
-                # Store product
+            # Basic URL validation - much less strict
+            if not url.startswith(('http://', 'https://')):
+                await update.message.reply_text(
+                    "Please provide a valid URL starting with http:// or https://",
+                    reply_markup=self.get_back_to_menu_keyboard(context)
+                )
+                return
+            
+            # Send processing message
+            processing_msg = await update.message.reply_text("🔍 Analyzing product...")
+            
+            try:
+                # Use secure scraper but with simplified error handling
+                product_data, error = await scraper.scrape_product_info(url)
+                
+                if error:
+                    await processing_msg.edit_text(
+                        f"❌ {error}",
+                        reply_markup=self.get_back_to_menu_keyboard(context)
+                    )
+                    return
+                
+                if not product_data or not product_data.get('title'):
+                    await processing_msg.edit_text(
+                        "❌ Could not extract product information from this URL. Please try a different product page.",
+                        reply_markup=self.get_back_to_menu_keyboard(context)
+                    )
+                    return
+                
+                # Basic data cleaning
+                clean_product = {
+                    'name': product_data.get('title', 'Unknown Product')[:200],
+                    'price': product_data.get('price', 'Price not available')[:100],
+                    'url': url,
+                    'brand': product_data.get('brand', 'Unknown Brand')[:100],
+                    'description': product_data.get('description', 'No description')[:500],
+                    'added_timestamp': datetime.now().isoformat()
+                }
+                
+                # Add to user's products
                 if 'products' not in context.user_data:
                     context.user_data['products'] = []
                 
-                context.user_data['products'].append(product_info)
+                # Check product limit
+                if len(context.user_data['products']) >= config.max_products_per_user:
+                    await processing_msg.edit_text(
+                        self.get_text('max_products_reached', context, config.max_products_per_user),
+                        reply_markup=self.get_back_to_menu_keyboard(context)
+                    )
+                    return
                 
-                # Show success message
+                context.user_data['products'].append(clean_product)
+                
+                # Save user data
+                storage.save_user_data(user.id, context.user_data)
+                
+                # Show success message with product details
+                product_info = f"📦 {self.get_text('product_added', context)}\n\n"
+                product_info += f"🏷️ **{self.get_text('name_label', context)}**: {clean_product['name']}\n"
+                product_info += f"💰 **{self.get_text('price_label', context)}**: {clean_product['price']}\n"
+                product_info += f"🏢 **{self.get_text('brand_label', context)}**: {clean_product['brand']}\n"
+                
+                if clean_product.get('description') and clean_product['description'] != 'No description':
+                    desc = clean_product['description'][:200] + "..." if len(clean_product['description']) > 200 else clean_product['description']
+                    product_info += f"📝 **{self.get_text('description_label', context)}**: {desc}\n"
+                
                 await processing_msg.edit_text(
-                    self.get_text('product_added_title', context) + "\n\n" + 
-                    self.get_text('product_added_message', context, len(context.user_data['products'])),
+                    product_info,
                     reply_markup=self.get_my_products_keyboard(context)
                 )
-            else:
+                
+                logger.info(f"Product added for user {user.id}: {clean_product['name'][:50]}")
+                
+            except Exception as scraping_error:
+                logger.error(f"Scraping error for user {user.id}: {scraping_error}")
                 await processing_msg.edit_text(
-                    self.get_text('extraction_failed', context, "Unable to extract product information"),
+                    "❌ Failed to analyze the product. The website might be blocking automated access or the URL might not be a product page. Please try a different URL.",
                     reply_markup=self.get_back_to_menu_keyboard(context)
                 )
-        
+                storage.update_stats_secure('total_errors')
+                
         except Exception as e:
-            logger.error(f"Error processing product link: {e}")
-            await processing_msg.edit_text(
-                self.get_text('extraction_failed', context, str(e)),
-                reply_markup=self.get_back_to_menu_keyboard(context)
-            )
-        
-        return True
+            logger.error(f"Error in handle_product_link for user {user.id}: {e}", exc_info=True)
+            try:
+                await update.message.reply_text(
+                    "An error occurred while processing the product link. Please try again.",
+                    reply_markup=self.get_back_to_menu_keyboard(context)
+                )
+            except:
+                pass
 
-    async def initiate_channel_post_from_edit(self, update, context):
-        """Show confirmation dialog after editing post text."""
-        channel_info = context.user_data.get('channel_info', {})
-        channel_id = channel_info.get('channel_id', 'Unknown')
-        product_name = context.user_data.get('last_product_name', 'Unknown')
-        post_text = context.user_data.get('pending_post_text', '')
-        
-        # Show preview with hashtags
-        hashtags = self.generate_hashtags(product_name, context)
-        preview_text = post_text
-        if '#' not in post_text:
-            preview_text = f"{post_text}\n\n{hashtags}"
-        
-        confirmation_text = f"{self.get_text('confirm_post_title', context)}\n\n"
-        confirmation_text += f"Channel: @{channel_id}\n"
-        confirmation_text += f"Product: {product_name}\n\n"
-        confirmation_text += f"Preview:\n{preview_text}"
-        
-        await update.message.reply_text(
-            confirmation_text,
-            reply_markup=self.get_post_confirmation_keyboard(context)
-        )
-    
     # Menu display methods
     async def show_main_menu_message(self, update, context):
         """Show main menu message."""
@@ -813,7 +802,7 @@ class PromoBot:
             context.user_data['last_product_name'] = product.get('name', 'Product')
             
             # Update statistics
-            storage.update_stats('total_promos_generated')
+            storage.update_stats_secure('total_promos_generated')
             
             # Send result
             result_text = f"{self.get_text('promo_result', context, product.get('name', 'Product'))}\n\n{promo_text}\n\n{self.get_text('promo_footer', context)}"
@@ -891,7 +880,7 @@ class PromoBot:
         context.user_data.clear()
         
         # Update statistics
-        storage.update_stats('total_messages')
+        storage.update_stats_secure('total_messages')
         
         stop_text = f"{self.get_text('bot_stopped_title', context)}\n\n{self.get_text('bot_stopped_message', context)}"
         await query.edit_message_text(stop_text)
@@ -1369,6 +1358,161 @@ class PromoBot:
             logger.error(f"Translation error: {e}")
             await query.edit_message_text(
                 self.get_text('general_error', context),
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+
+    async def handle_channel_input(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle channel/group input from user."""
+        user = update.effective_user
+        channel_input = update.message.text.strip()
+        
+        try:
+            # Clear waiting states
+            context.user_data.pop('awaiting_channel_input', None)
+            context.user_data.pop('waiting_for_channel_input', None)
+            
+            # Basic validation
+            if not channel_input:
+                await update.message.reply_text(
+                    "Please provide a valid channel/group username or ID.",
+                    reply_markup=self.get_back_to_menu_keyboard(context)
+                )
+                return
+            
+            # Clean the input
+            channel_id = channel_input.replace('@', '').strip()
+            
+            # Simple validation - just check if it looks reasonable
+            if len(channel_id) < 3:
+                await update.message.reply_text(
+                    "Channel/group name is too short. Please try again.",
+                    reply_markup=self.get_back_to_menu_keyboard(context)
+                )
+                return
+            
+            # Send verification message
+            processing_msg = await update.message.reply_text("🔍 Verifying channel/group access...")
+            
+            try:
+                # Try to verify permissions (simplified)
+                success, message = await self.verify_channel_permissions(context, channel_id)
+                
+                if success:
+                    # Save channel info
+                    context.user_data['channel_info'] = {
+                        'channel_id': channel_id,
+                        'auto_post': False,
+                        'verified_at': datetime.now().isoformat()
+                    }
+                    
+                    # Save user data
+                    storage.save_user_data(user.id, context.user_data)
+                    
+                    await processing_msg.edit_text(
+                        f"✅ Channel/group configured successfully!\n\nChannel: @{channel_id}\n\nYou can now post promotional content to this channel.",
+                        reply_markup=self.get_channel_settings_keyboard(context)
+                    )
+                else:
+                    await processing_msg.edit_text(
+                        f"❌ Failed to verify channel/group access.\n\nError: {message}\n\nPlease make sure:\n1. The bot is added to the channel/group\n2. The bot has admin permissions\n3. The bot can post messages",
+                        reply_markup=self.get_channel_settings_keyboard(context)
+                    )
+                    
+            except Exception as e:
+                logger.error(f"Channel verification error for user {user.id}: {e}")
+                await processing_msg.edit_text(
+                    f"❌ Error verifying channel/group: {str(e)}\n\nPlease check the channel/group name and try again.",
+                    reply_markup=self.get_channel_settings_keyboard(context)
+                )
+                
+        except Exception as e:
+            logger.error(f"Error in handle_channel_input for user {user.id}: {e}", exc_info=True)
+            await update.message.reply_text(
+                "An error occurred while setting up the channel. Please try again.",
+                reply_markup=self.get_channel_settings_keyboard(context)
+            )
+
+    async def handle_post_edit(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle post text editing."""
+        user = update.effective_user
+        new_text = update.message.text.strip()
+        
+        try:
+            # Clear editing states
+            context.user_data.pop('awaiting_post_edit', None)
+            context.user_data.pop('editing_post', None)
+            
+            if not new_text:
+                await update.message.reply_text(
+                    "Please provide valid text for the post.",
+                    reply_markup=self.get_back_to_menu_keyboard(context)
+                )
+                return
+            
+            # Store the edited text
+            context.user_data['pending_post_text'] = new_text
+            context.user_data['last_generated_text'] = new_text
+            
+            # Save user data
+            storage.save_user_data(user.id, context.user_data)
+            
+            # Show confirmation
+            channel_info = context.user_data.get('channel_info', {})
+            product_name = context.user_data.get('last_product_name', 'Unknown')
+            
+            confirmation_text = f"✅ Text updated!\n\n"
+            if channel_info.get('channel_id'):
+                confirmation_text += f"Channel: @{channel_info['channel_id']}\n"
+            confirmation_text += f"Product: {product_name}\n\n"
+            confirmation_text += f"Updated text:\n{new_text}"
+            
+            await update.message.reply_text(
+                confirmation_text,
+                reply_markup=self.get_post_confirmation_keyboard(context)
+            )
+            
+        except Exception as e:
+            logger.error(f"Error in handle_post_edit for user {user.id}: {e}", exc_info=True)
+            await update.message.reply_text(
+                "An error occurred while editing the post. Please try again.",
+                reply_markup=self.get_back_to_menu_keyboard(context)
+            )
+
+    async def handle_generated_text_edit(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle generated text editing."""
+        user = update.effective_user
+        new_text = update.message.text.strip()
+        
+        try:
+            # Clear editing states
+            context.user_data.pop('awaiting_generated_text_edit', None)
+            context.user_data.pop('editing_generated_text', None)
+            
+            if not new_text:
+                await update.message.reply_text(
+                    "Please provide valid text.",
+                    reply_markup=self.get_back_to_menu_keyboard(context)
+                )
+                return
+            
+            # Store the edited text
+            context.user_data['last_generated_text'] = new_text
+            
+            # Save user data
+            storage.save_user_data(user.id, context.user_data)
+            
+            # Show the updated text with options
+            result_text = f"✅ Text updated!\n\n{new_text}\n\n{self.get_text('promo_options', context)}"
+            
+            await update.message.reply_text(
+                result_text,
+                reply_markup=self.get_post_generation_keyboard(context)
+            )
+            
+        except Exception as e:
+            logger.error(f"Error in handle_generated_text_edit for user {user.id}: {e}", exc_info=True)
+            await update.message.reply_text(
+                "An error occurred while editing the text. Please try again.",
                 reply_markup=self.get_back_to_menu_keyboard(context)
             )
 

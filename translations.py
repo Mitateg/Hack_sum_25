@@ -5,6 +5,7 @@ TRANSLATIONS = {
     'en': {
         'welcome_title': '🚀 Welcome to the Promo Text Generator Bot! 🚀',
         'welcome_message': 'I can help you create amazing promotional posts for your products!\n\nChoose your language first:',
+        'welcome': 'Welcome to the Promo Text Generator Bot, {0}! 🚀\n\nI can help you create amazing promotional posts for your products. Use the menu below to get started:',
         'language_selected': '✅ Language set to English!\n\nChoose an option below to get started:',
         'main_menu_title': '🚀 Promo Text Generator Bot - Main Menu',
         'main_menu_subtitle': 'Choose an option below to get started:',
@@ -14,6 +15,7 @@ TRANSLATIONS = {
         'my_products': '📦 My Products', 
         'channel_settings': '📢 Channel Settings',
         'help': '❓ Help',
+        'help_text': '❓ How to use this bot:\n\n1. 📦 Add Products - Send product links to save them\n2. ✨ Generate Promos - Create promotional texts\n3. 🌐 Multiple Languages - Available in English, Russian, Romanian\n4. 📢 Channel Settings - Configure auto-posting to channels\n\nJust send me a product URL or use the menu below!',
         'examples': '💡 Examples',
         'language': '🌐 Language',
         'stop_bot': '🛑 Stop Bot',
@@ -125,7 +127,7 @@ TRANSLATIONS = {
         'system_prompt': 'You are a professional marketing copywriter specializing in creating compelling promotional content for products. Your writing style is engaging, persuasive, and modern. Write in English.',
         
         # Help content
-        'help_content': '❓ How to use this bot:\n\n1. 📦 Add Products - Send product links to save them\n2. ✨ Generate Promos - Create promotional texts\n3. 🌐 Multiple Languages - Available in English, Russian, Romanian\n4. 📢 Channel Integration - Post directly to your channels\n\nNeed more help? Contact support!',
+        'help_content': '❓ How to use this bot:\n\n1. 📦 Add Products - Send product links to save them\n2. ✨ Generate Promos - Create promotional texts\n3. 🌐 Multiple Languages - Available in English, Russian, Romanian\n4. 📢 Channel Settings - Configure auto-posting to channels\n\nJust send me a product URL or use the menu below!',
         
         # Examples
         'examples_title': '💡 Examples',
@@ -140,8 +142,11 @@ TRANSLATIONS = {
         'confirm_stop_message': 'Are you sure you want to stop the bot?\n\nThis will clear your session data.',
         'confirm_stop_btn': '✅ Yes, Stop',
         'cancel_stop_btn': '❌ Cancel',
+        'stop_confirmation': 'Are you sure you want to stop the bot? This will end your session.',
+        'stop_yes': '✅ Yes, Stop',
+        'stop_no': '❌ No, Continue',
         'bot_stopped_title': '🛑 Bot Stopped',
-        'bot_stopped_message': 'The bot has been stopped. Your session data has been cleared.\n\nSend /start to begin again.',
+        'bot_stopped_message': 'The bot has been stopped. Thank you for using our service!\n\nTo start again, send /start',
         
         # Translation and editing
         'translate_to_title': '🌐 Translate Text',
@@ -161,6 +166,7 @@ TRANSLATIONS = {
     'ru': {
         'welcome_title': '🚀 Добро пожаловать в бот генератора промо-текстов! 🚀',
         'welcome_message': 'Я помогу вам создать потрясающие рекламные посты для ваших товаров!\n\nСначала выберите язык:',
+        'welcome': 'Добро пожаловать в бот генератора промо-текстов, {0}! 🚀\n\nЯ помогу вам создать потрясающие рекламные посты для ваших товаров. Используйте меню ниже, чтобы начать:',
         'language_selected': '✅ Язык установлен на русский!\n\nВыберите опцию ниже, чтобы начать:',
         'main_menu_title': '🚀 Бот генератора промо-текстов - Главное меню',
         'main_menu_subtitle': 'Выберите опцию ниже, чтобы начать:',
@@ -170,6 +176,7 @@ TRANSLATIONS = {
         'my_products': '📦 Мои товары',
         'channel_settings': '📢 Настройки канала',
         'help': '❓ Помощь',
+        'help_text': '❓ Как использовать этого бота:\n\n1. 📦 Добавить товары - Отправляйте ссылки на товары для сохранения\n2. ✨ Создать промо - Создавайте рекламные тексты\n3. 🌐 Несколько языков - Доступен на английском, русском, румынском\n4. 📢 Интеграция каналов - Публикуйте прямо в ваши каналы\n\nНужна помощь? Обратитесь в поддержку!',
         'examples': '💡 Примеры',
         'language': '🌐 Язык',
         'stop_bot': '🛑 Остановить бота',
@@ -296,6 +303,9 @@ TRANSLATIONS = {
         'confirm_stop_message': 'Вы уверены, что хотите остановить бота?\n\nЭто очистит данные вашей сессии.',
         'confirm_stop_btn': '✅ Да, остановить',
         'cancel_stop_btn': '❌ Отмена',
+        'stop_confirmation': 'Вы уверены, что хотите остановить бота? Это очистит данные вашей сессии.',
+        'stop_yes': '✅ Да, остановить',
+        'stop_no': '❌ Нет, продолжить',
         'bot_stopped_title': '🛑 Бот остановлен',
         'bot_stopped_message': 'Бот остановлен. Данные вашей сессии очищены.\n\nОтправьте /start чтобы начать снова.',
         
@@ -305,8 +315,10 @@ TRANSLATIONS = {
         'translate_to_english': '🇺🇸 Английский',
         'translate_to_russian': '🇷🇺 Русский',
         'translate_to_romanian': '🇷🇴 Румынский',
-        'edit_generated_title': '✏️ Редактировать сгенерированный текст',
-        'edit_generated_instructions': 'Trimite-mi versiunea editată a textului promoțional:',
+        'edit_generated_title': '✏️ Редактировать текст',
+        'edit_generated_instructions': 'Отправьте новый текст для замены:',
+        'edit_post_title': '✏️ Редактировать пост',
+        'edit_post_instructions': 'Отправьте новый текст для поста:',
         
         # Error messages
         'rate_limit': '⚠️ Превышен лимит запросов. Попробуйте еще раз через момент.',
@@ -317,6 +329,7 @@ TRANSLATIONS = {
     'ro': {
         'welcome_title': '🚀 Bun venit la Bot-ul Generator de Texte Promoționale! 🚀',
         'welcome_message': 'Te pot ajuta să creezi postări promoționale uimitoare pentru produsele tale!\n\nAlege mai întâi limba:',
+        'welcome': 'Bun venit la Bot-ul Generator de Texte Promoționale, {0}! 🚀\n\nTe pot ajuta să creezi postări promoționale uimitoare pentru produsele tale. Folosește meniul de mai jos pentru a începe:',
         'language_selected': '✅ Limba setată la română!\n\nAlege o opțiune de mai jos pentru a începe:',
         'main_menu_title': '🚀 Bot Generator Texte Promoționale - Meniu Principal',
         'main_menu_subtitle': 'Alege o opțiune de mai jos pentru a începe:',
@@ -326,6 +339,7 @@ TRANSLATIONS = {
         'my_products': '📦 Produsele Mele',
         'channel_settings': '📢 Setări Canal',
         'help': '❓ Ajutor',
+        'help_text': '❓ Cum să folosești acest bot:\n\n1. 📦 Adaugă Produse - Trimite linkuri de produse pentru a le salva\n2. ✨ Generează Promoții - Creează texte promoționale\n3. 🌐 Limbi Multiple - Disponibil în engleză, rusă, română\n4. 📢 Integrare Canal - Postează direct în canalele tale\n\nAi nevoie de ajutor? Contactează suportul!',
         'examples': '💡 Exemple',
         'language': '🌐 Limba',
         'stop_bot': '🛑 Oprește Bot-ul',
@@ -452,6 +466,9 @@ TRANSLATIONS = {
         'confirm_stop_message': 'Ești sigur că vrei să oprești bot-ul?\n\nAceasta va șterge datele sesiunii tale.',
         'confirm_stop_btn': '✅ Da, Oprește',
         'cancel_stop_btn': '❌ Anulează',
+        'stop_confirmation': 'Ești sigur că vrei să oprești bot-ul? Aceasta va șterge datele sesiunii tale.',
+        'stop_yes': '✅ Da, Oprește',
+        'stop_no': '❌ Nu, Continuă',
         'bot_stopped_title': '🛑 Bot Oprit',
         'bot_stopped_message': 'Bot-ul a fost oprit. Datele sesiunii tale au fost șterse.\n\nTrimite /start pentru a începe din nou.',
         
